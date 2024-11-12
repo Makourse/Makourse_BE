@@ -26,7 +26,6 @@ INSTALLED_APPS = [
     # my apps
     'account',
     'course',
-    'user',
     # basic apps
     'django.contrib.admin',
     'django.contrib.auth',

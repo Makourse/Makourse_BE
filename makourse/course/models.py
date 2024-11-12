@@ -3,7 +3,6 @@ from account.models import *
 
 class MyPlace(models.Model): # 나만의 장소
     place_name = models.CharField(max_length=10)
-
     address = models.CharField(max_length=150)
     latitude = models.FloatField(default=0.0)  # 위도
     longitude = models.FloatField(default=0.0)  # 경도
@@ -29,13 +28,11 @@ class Schedule(models.Model): # 일정(코스)
         return self.course_name
 
 
-class SeheduleEntry(models.Model): # 각 코스의 일정들
-    sehedule = models.ForeignKey(Schedule, on_delete=models.CASCADE) # 코스의 외래키
-
+class ScheduleEntry(models.Model): # 각 코스의 일정들
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE) # 코스의 외래키
     num = models.IntegerField() # 순번이 차례로 증가하게 해야되는지 아니면 나중에 결정해야하는지..
     entry_name = models.CharField(max_length=10) # 일정의 이름
     time = models.TimeField() # 그 일정의 시간
-
     open_time = models.TimeField() # 오픈 시간
     close_time = models.TimeField() # 마감시간
     # 운영시간은 이렇게 오픈, 마감 시간으로 따로 저장
@@ -53,7 +50,7 @@ class SeheduleEntry(models.Model): # 각 코스의 일정들
     # 순번 생성 (save 함수 오버로딩)
     def save(self, *args, **kwargs):
         if not self.num:
-            last_num = SeheduleEntry.objects.filter(sehedule=self.sehedule).order_by('-num').first()
+            last_num = ScheduleEntry.objects.filter(schedule=self.schedule).order_by('-num').first()
 
             if last_num:
                 new_num = last_num + 1
@@ -69,14 +66,11 @@ class SeheduleEntry(models.Model): # 각 코스의 일정들
         return self.entry_name
 
 class AlternativePlace(models.Model): # 대안장소
-    schedule_entry = models.ForeignKey(SeheduleEntry, on_delete=models.CASCADE)
-
+    schedule_entry = models.ForeignKey(ScheduleEntry, on_delete=models.CASCADE)
     address = models.CharField(max_length=150)
     latitude = models.FloatField(default=0.0)  # 위도
     longitude = models.FloatField(default=0.0)  # 경도
-
     name = models.CharField(max_length=10) # 대안장소 이름
-
     category =  models.CharField(max_length=10, null=True)
 
     def __str__(self):
