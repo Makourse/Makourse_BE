@@ -28,42 +28,33 @@ class Schedule(models.Model): # 일정(코스)
         return self.course_name
 
 
-class ScheduleEntry(models.Model): # 각 코스의 일정들
-    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE) # 코스의 외래키
-    num = models.IntegerField() # 순번이 차례로 증가하게 해야되는지 아니면 나중에 결정해야하는지..
-    entry_name = models.CharField(max_length=10) # 일정의 이름
-    time = models.TimeField() # 그 일정의 시간
-    open_time = models.TimeField() # 오픈 시간
-    close_time = models.TimeField() # 마감시간
-    # 운영시간은 이렇게 오픈, 마감 시간으로 따로 저장
-
-    category =  models.CharField(max_length=10, null=True)
-    # 일단 char로 만들었는데 나중에 Choice로 변경해야될거 같으면 그때 하자!
-    # category는 지도 api에서 가져오는 거니까 모델에 따로 필요가 없나..?
-
-    content = models.TextField(null=True) # 메모
-
+class ScheduleEntry(models.Model):  # 각 코스의 일정들
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)  # 코스의 외래키
+    num = models.IntegerField(null=True)  # 순번, 기본값 1
+    entry_name = models.CharField(max_length=30)  # 일정의 이름
+    time = models.TimeField()  # 그 일정의 시간
+    open_time = models.TimeField(null= True)  # 오픈 시간
+    close_time = models.TimeField(null=True)  # 마감 시간
+    category = models.CharField(max_length=10, null=True)  # 카테고리
+    content = models.TextField(null=True)  # 메모
     address = models.CharField(max_length=150)
     latitude = models.FloatField(default=0.0)  # 위도
     longitude = models.FloatField(default=0.0)  # 경도
 
-    # 순번 생성 (save 함수 오버로딩)
+    # 순번 자동 증가 로직
     def save(self, *args, **kwargs):
-        if not self.num:
-            last_num = ScheduleEntry.objects.filter(schedule=self.schedule).order_by('-num').first()
-
-            if last_num:
-                new_num = last_num + 1
+        if not self.num:  # num이 지정되지 않은 경우 자동으로 계산
+            last_entry = ScheduleEntry.objects.filter(schedule=self.schedule).order_by('-num').first()
+            if last_entry:
+                self.num = last_entry.num + 1  # 이전 num 값에서 +1
             else:
-                new_num = 1
-            
-            self.num = new_num
-
-        super().save(*args, **kwargs) #객체 저장
-            
+                self.num = 1  # 해당 schedule의 첫 번째 항목일 경우 1로 설정
+        super().save(*args, **kwargs)  # 부모 클래스의 save 호출
 
     def __str__(self):
         return self.entry_name
+
+
 
 class AlternativePlace(models.Model): # 대안장소
     schedule_entry = models.ForeignKey(ScheduleEntry, on_delete=models.CASCADE)
