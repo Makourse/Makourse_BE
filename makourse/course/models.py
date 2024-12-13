@@ -30,14 +30,14 @@ class Schedule(models.Model): # 일정(코스)
 
 class ScheduleEntry(models.Model):  # 각 코스의 일정들
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)  # 코스의 외래키
-    num = models.IntegerField(null=True)  # 순번
+    num = models.IntegerField(null=True, blank=True)  # 순번
     entry_name = models.CharField(max_length=30)  # 일정의 이름
-    time = models.TimeField()  # 그 일정의 시간
-    open_time = models.TimeField(null=True)  # 오픈 시간
-    close_time = models.TimeField(null=True)  # 마감 시간
-    category = models.CharField(max_length=10, null=True)  # 카테고리
-    content = models.TextField(null=True)  # 메모
-    address = models.CharField(max_length=150)
+    time = models.TimeField(null=True, blank=True)  # 그 일정의 시간
+    open_time = models.TimeField(null=True, blank=True)  # 오픈 시간
+    close_time = models.TimeField(null=True, blank=True)  # 마감 시간
+    category = models.CharField(max_length=10, null=True, blank=True)  # 카테고리
+    content = models.TextField(null=True, blank = True)  # 메모
+    address = models.CharField(null=True, blank = True, max_length=150)
     latitude = models.FloatField(default=0.0)  # 위도
     longitude = models.FloatField(default=0.0)  # 경도
 
@@ -53,6 +53,7 @@ class ScheduleEntry(models.Model):  # 각 코스의 일정들
 
     def __str__(self):
         return self.entry_name
+
 
 
 
