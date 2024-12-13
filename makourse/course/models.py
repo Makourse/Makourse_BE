@@ -16,12 +16,12 @@ class MyPlace(models.Model): # 나만의 장소
 
 
 class Schedule(models.Model): # 일정(코스)
-    group = models.OneToOneField(UserGroup, on_delete=models.CASCADE, related_name='schedule', null=True)  # 일대일 관계 설정
-    meet_date_first = models.DateTimeField(null=True) # 만나는 날짜(최대 3개로 설정하게 하려면 조금 복잡해서 일단 이렇게 해놓음..)
-    meet_date_second = models.DateTimeField(null=True) # 2024-12-10T15:30:00 식으로 json 받기
-    meet_date_third = models.DateTimeField(null=True)
-    course_name = models.CharField(max_length=20, null=True)
-    meet_place = models.CharField(max_length=50, null=True)
+    group = models.OneToOneField(UserGroup, on_delete=models.CASCADE, related_name='schedule', null=True, blank= True)  # 일대일 관계 설정
+    meet_date_first = models.DateTimeField(null=True, blank= True) # 만나는 날짜(최대 3개로 설정하게 하려면 조금 복잡해서 일단 이렇게 해놓음..)
+    meet_date_second = models.DateTimeField(null=True, blank= True) # 2024-12-10T15:30:00 식으로 json 받기
+    meet_date_third = models.DateTimeField(null=True , blank= True)
+    course_name = models.CharField(max_length=20, null=True, blank= True)
+    meet_place = models.CharField(max_length=50, null=True, blank= True)
     latitude = models.FloatField(default=0.0)  # 만나는 장소의 위도
     longitude = models.FloatField(default=0.0)  # 만나는 장소의 경도
     created_at = models.DateField(auto_now_add=True)
