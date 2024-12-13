@@ -34,7 +34,9 @@ class ScheduleUpdateView(APIView):
             schedule = get_object_or_404(Schedule, pk=pk)
             serializer = CreateCourseSerializser(schedule)
 
-            return Response(serializer.data, status=200)
+            schedule_entry = ScheduleEntry.objects.filter(schedule=pk)
+            entry_serializer = ScheduleEntrySerializer(schedule_entry, many=True)
+            return Response({'course':serializer.data, 'entry':entry_serializer.data}, status=200)
         else: # 일정 목록 조회
             schedules = Schedule.objects.all()
             serializer = ListCourseSerializer(schedules, many=True)

@@ -15,3 +15,8 @@ class ListCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Schedule
         fields = ['pk', 'course_name', 'meet_date_first', 'group']
+
+class ScheduleEntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ScheduleEntry
+        fields = ['pk', 'num', 'entry_name']
