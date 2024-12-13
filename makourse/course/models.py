@@ -30,10 +30,10 @@ class Schedule(models.Model): # 일정(코스)
 
 class ScheduleEntry(models.Model):  # 각 코스의 일정들
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)  # 코스의 외래키
-    num = models.IntegerField(null=True)  # 순번, 기본값 1
+    num = models.IntegerField(null=True)  # 순번
     entry_name = models.CharField(max_length=30)  # 일정의 이름
     time = models.TimeField()  # 그 일정의 시간
-    open_time = models.TimeField(null= True)  # 오픈 시간
+    open_time = models.TimeField(null=True)  # 오픈 시간
     close_time = models.TimeField(null=True)  # 마감 시간
     category = models.CharField(max_length=10, null=True)  # 카테고리
     content = models.TextField(null=True)  # 메모
@@ -43,16 +43,17 @@ class ScheduleEntry(models.Model):  # 각 코스의 일정들
 
     # 순번 자동 증가 로직
     def save(self, *args, **kwargs):
-        if not self.num:  # num이 지정되지 않은 경우 자동으로 계산
+        if self.num is None:  # num이 None인 경우에만 자동으로 계산
             last_entry = ScheduleEntry.objects.filter(schedule=self.schedule).order_by('-num').first()
             if last_entry:
                 self.num = last_entry.num + 1  # 이전 num 값에서 +1
             else:
-                self.num = 1  # 해당 schedule의 첫 번째 항목일 경우 1로 설정
+                self.num = 0  # 해당 schedule의 첫 번째 항목일 경우 0으로 설정
         super().save(*args, **kwargs)  # 부모 클래스의 save 호출
 
     def __str__(self):
         return self.entry_name
+
 
 
 
