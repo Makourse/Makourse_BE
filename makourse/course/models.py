@@ -8,7 +8,8 @@ class MyPlace(models.Model): # 나만의 장소
     longitude = models.FloatField(default=0.0)  # 경도
     # 일단 위도, 경도를 사용할거 같아서 주소 string 필드는 안적음
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE) # 유저가 삭제되면 나만의 장소도 삭제
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False) # 유저가 삭제되면 나만의 장소도 삭제
+    # 로그인 구현 전이라 null=True로 잠시 해놓음
 
     def __str__(self):
         return self.place_name
