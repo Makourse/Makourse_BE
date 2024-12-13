@@ -60,7 +60,7 @@ class User(models.Model):
     id = models.CharField(max_length=100, unique=True, primary_key=True) # id
     password = models.CharField(max_length=100) # pwd
     name = models.CharField(max_length=30) # 이름
-    profile_image = models.ImageField(upload_to='user_photo/') # 프로필 사진
+    profile_image = models.ImageField(upload_to='user_photo/', null=True, blank=True) # 프로필 사진
     field = models.BooleanField(default=False) # 이용약관 동의 여부
 
     def __str__(self): 

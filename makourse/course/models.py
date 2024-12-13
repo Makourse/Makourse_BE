@@ -3,13 +3,11 @@ from account.models import *
 
 class MyPlace(models.Model): # 나만의 장소
     place_name = models.CharField(max_length=10)
-
     address = models.CharField(max_length=150)
     latitude = models.FloatField(default=0.0)  # 위도
     longitude = models.FloatField(default=0.0)  # 경도
-    # 일단 위도, 경도를 사용할거 같아서 주소 string 필드는 안적음
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE) # 유저가 삭제되면 나만의 장소도 삭제
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False) # 유저가 삭제되면 나만의 장소도 삭제
 
     def __str__(self):
         return self.place_name
