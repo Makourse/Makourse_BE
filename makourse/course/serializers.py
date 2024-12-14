@@ -1,6 +1,11 @@
 from rest_framework import serializers
 from .models import *
 
+class ScheduleEntryDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ScheduleEntry
+        fields = '__all__'
+
 class CreateCourseSerializser(serializers.ModelSerializer):
     class Meta:
         model = Schedule
@@ -20,3 +25,9 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = ScheduleEntry
         fields = ['pk', 'num', 'entry_name']
+
+
+class AlternativePlaceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AlternativePlace
+        fields = '__all__'

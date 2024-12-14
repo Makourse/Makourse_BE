@@ -1,9 +1,9 @@
 from django.db import models
 from django.utils.crypto import get_random_string # 초대링크 생성
-
-
-from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
+
+def generate_unique_code():
+    return get_random_string(length=30)
 
 # 사용자 생성 및 슈퍼유저 생성 관리
 class CustomUserManager(BaseUserManager):
@@ -66,15 +66,23 @@ class User(models.Model):
     def __str__(self): 
         return self.id
 
+
 class UserGroup(models.Model):
-    code = models.CharField(max_length=30, unique=True, default=get_random_string)
-    
-    def generate_code(self): # 초대링크 생성 함수
+    code = models.CharField(
+        max_length=30,
+        unique=True,
+        default=generate_unique_code  # 전역 함수로 대체
+    )
+
+    def generate_code(self):  # 초대링크 생성 함수
         self.code = get_random_string(length=30)
         self.save()
 
     def __str__(self):
-        self.code
+        # code가 None인 경우 기본 문자열 반환
+        return self.code if self.code else "Unnamed UserGroup"
+
+
 
 class GroupMembership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
