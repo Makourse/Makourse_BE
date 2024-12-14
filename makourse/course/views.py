@@ -70,7 +70,81 @@ class ScheduleEntryView(APIView):
         schedule_entry.delete()
         return Response({"message": "ScheduleEntry deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
+class AlternativePlaceView(APIView):
+    def post(self, request, schedule_entry_id, *args, **kwargs):
 
+        try:
+            schedule_entry = ScheduleEntry.objects.get(pk=schedule_entry_id)
+        except ScheduleEntry.DoesNotExist:
+            return Response({"error": "ScheduleEntry not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        data = request.data.copy()
+        data['schedule_entry'] = schedule_entry.id  
+
+        serializer = AlternativePlaceSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request, schedule_entry_id, *args, **kwargs):
+
+        try:
+            schedule_entry = ScheduleEntry.objects.get(pk=schedule_entry_id)
+        except ScheduleEntry.DoesNotExist:
+            return Response({"error": "ScheduleEntry not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        alternative_places = AlternativePlace.objects.filter(schedule_entry=schedule_entry)
+        serializer = AlternativePlaceSerializer(alternative_places, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def delete(self, request, pk, *args, **kwargs):
+
+        try:
+            alternative_place = AlternativePlace.objects.get(pk=pk)
+        except AlternativePlace.DoesNotExist:
+            return Response({"error": "AlternativePlace not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        alternative_place.delete()
+        return Response({"message": "AlternativePlace deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+    
+    def patch(self, request, pk, *args, **kwargs):
+
+        try:
+            alternative_place = AlternativePlace.objects.get(pk=pk)
+        except AlternativePlace.DoesNotExist:
+            return Response({"error": "AlternativePlace not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AlternativePlaceSerializer(alternative_place, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ReplaceWithAlternativePlaceView(APIView):
+    def put(self, request, alternative_place_id, *args, **kwargs):
+
+        try:
+            alternative_place = AlternativePlace.objects.get(pk=alternative_place_id)
+        except AlternativePlace.DoesNotExist:
+            return Response({"error": "AlternativePlace not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        schedule_entry = alternative_place.schedule_entry
+
+        updated_data = {
+            "address": alternative_place.address,
+            "latitude": alternative_place.latitude,
+            "longitude": alternative_place.longitude,
+            "category": alternative_place.category,
+            "entry_name": alternative_place.name,
+        }
+
+        serializer = ScheduleEntryDetailSerializer(schedule_entry, data=updated_data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 # 일정(코스) 등록 및 수정
 class ScheduleUpdateView(APIView):
     # 일정 등록
