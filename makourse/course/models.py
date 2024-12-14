@@ -67,9 +67,9 @@ class AlternativePlace(models.Model): # 대안장소
     latitude = models.FloatField(default=0.0)  # 위도
     longitude = models.FloatField(default=0.0)  # 경도
 
-    name = models.CharField(max_length=10) # 대안장소 이름
+    name = models.CharField(max_length=30,) # 대안장소 이름
 
-    category =  models.CharField(max_length=10, null=True)
+    category =  models.CharField(max_length=10, null=True, blank= True)
 
     def __str__(self):
         return self.name
