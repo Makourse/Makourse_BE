@@ -9,3 +9,4 @@ admin.site.register(User, UserAdmin)
 
 
 admin.site.register(UserGroup)
+admin.site.register(GroupMembership)
