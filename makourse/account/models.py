@@ -60,7 +60,7 @@ class User(models.Model):
     id = models.CharField(max_length=100, unique=True, primary_key=True) # id
     password = models.CharField(max_length=100) # pwd
     name = models.CharField(max_length=30) # 이름
-    profile_image = models.ImageField(upload_to='user_photo/') # 프로필 사진
+    profile_image = models.ImageField(upload_to='user_photo/',null=True,blank=True) # 프로필 사진
     field = models.BooleanField(default=False) # 이용약관 동의 여부
 
     def __str__(self): 
@@ -85,14 +85,21 @@ class UserGroup(models.Model):
 
 
 class GroupMembership(models.Model):
+    ROLE_CHOICES = [
+        ('leader', '모임장'),
+        ('member', '모임원'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     group = models.ForeignKey(UserGroup, on_delete=models.CASCADE)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='member')  # 역할 필드 추가
 
     class Meta:
         unique_together = ('user', 'group')  # 동일한 사용자가 같은 그룹에 중복 가입하지 않도록
 
     def __str__(self):
-        return f"{self.user.name} in group {self.group.code}"
+        schedule_name = self.group.schedule.course_name if hasattr(self.group, 'schedule') and self.group.schedule else "No Schedule"
+        return f"{schedule_name}의 {self.user.name}({self.get_role_display()})"
 
 # user와 group은 다대다 관계인듯
 # 한 user가 여러 그룹에 들어갈 수 있고, 한 group 안에도 여러 유저가 있을 수 있으니까
