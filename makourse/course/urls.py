@@ -2,6 +2,8 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
+    path('myplace/', MyPlaceView.as_view()), # 나만의 장소 추가(post), 목록조회(get)
+    path('myplace/<int:pk>/', MyPlaceView.as_view()), # 나만의 장소 삭제(delete), 수정(patch)
     
     # 세부 일정
     path('schedule-entries/post/<int:schedule_id>', ScheduleEntryView.as_view(), name='schedule-entry-create'),  # POST
