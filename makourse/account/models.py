@@ -74,9 +74,6 @@ class UserGroup(models.Model):
         default=generate_unique_code  # 전역 함수로 대체
     )
 
-    def generate_code(self):  # 초대링크 생성 함수
-        self.code = get_random_string(length=30)
-        self.save()
 
     def __str__(self):
         # code가 None인 경우 기본 문자열 반환
