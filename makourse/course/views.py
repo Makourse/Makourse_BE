@@ -106,6 +106,7 @@ class AlternativePlaceView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    
     def get(self, request, schedule_entry_id, *args, **kwargs):
 
         schedule_entry = get_object_or_404(ScheduleEntry, pk=schedule_entry_id)  # ScheduleEntry 객체 가져오기
@@ -143,6 +144,9 @@ class ReplaceWithAlternativePlaceView(APIView):
             "longitude": alternative_place.longitude,
             "category": alternative_place.category,
             "entry_name": alternative_place.name,
+            "content": alternative_place.content,  
+            "open_time": alternative_place.open_time, 
+            "close_time": alternative_place.close_time,  
         }
 
         serializer = ScheduleEntryDetailSerializer(schedule_entry, data=updated_data, partial=True)
