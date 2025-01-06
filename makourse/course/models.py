@@ -66,7 +66,10 @@ class AlternativePlace(models.Model): # 대안장소
     longitude = models.FloatField(default=0.0)  # 경도
 
     name = models.CharField(max_length=30,) # 대안장소 이름
-
+    content = models.TextField(null=True, blank = True)  # 메모
+    open_time = models.TimeField(null=True, blank=True)  # 오픈 시간
+    close_time = models.TimeField(null=True, blank=True)  # 마감 시간
+    
     category =  models.CharField(max_length=10, null=True, blank= True)
 
     def __str__(self):
