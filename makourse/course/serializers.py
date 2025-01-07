@@ -20,6 +20,11 @@ class ScheduleEntryDetailSerializer(serializers.ModelSerializer):
         model = ScheduleEntry
         fields = '__all__'
 
+class ScheduleEntryDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ScheduleEntry
+        fields = '__all__'
+
 class CreateCourseSerializser(serializers.ModelSerializer):
     user_id = serializers.CharField(write_only=True)  # 요청에서 유저 ID (id 필드) 처리
 
@@ -67,6 +72,7 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = ScheduleEntry
         fields = ['pk', 'num', 'entry_name']
+
 
 
 

@@ -7,7 +7,11 @@ from django.shortcuts import get_object_or_404
 from .models import *
 from .serializers import *
 
-
+from django.shortcuts import get_object_or_404
+from .serializers import *
+from .models import *
+from rest_framework.response import Response
+from rest_framework.decorators import APIView
 
 # 나만의 장소 기능
 class MyPlaceView(APIView):
@@ -54,10 +58,7 @@ class ScheduleEntryView(APIView):
 
     def post(self, request, schedule_id, *args, **kwargs):
 
-        try:
-            schedule = Schedule.objects.get(pk=schedule_id)
-        except Schedule.DoesNotExist:
-            return Response({"error": "Schedule not found"}, status=status.HTTP_404_NOT_FOUND)
+        schedule = get_object_or_404(Schedule, pk=schedule_id)
 
         data = request.data.copy()
         data["schedule"] = schedule.id
@@ -68,35 +69,17 @@ class ScheduleEntryView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def get(self, request, pk, *args, **kwargs):
 
-        try:
-            schedule_entry = ScheduleEntry.objects.get(pk=pk)
-        except ScheduleEntry.DoesNotExist:
-            return Response({"error": "ScheduleEntry not found"}, status=status.HTTP_404_NOT_FOUND)
+    def get(self, request, pk, *args, **kwargs):
+        
+        schedule_entry = get_object_or_404(ScheduleEntry, pk=pk)  # ScheduleEntry 객체 가져오기
 
         serializer = ScheduleEntryDetailSerializer(schedule_entry)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request, pk, *args, **kwargs):
-
-        try:
-            schedule_entry = ScheduleEntry.objects.get(pk=pk)
-        except ScheduleEntry.DoesNotExist:
-            return Response({"error": "ScheduleEntry not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = ScheduleEntryDetailSerializer(schedule_entry, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     def patch(self, request, pk, *args, **kwargs):
-
-        try:
-            schedule_entry = ScheduleEntry.objects.get(pk=pk)
-        except ScheduleEntry.DoesNotExist:
-            return Response({"error": "ScheduleEntry not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        schedule_entry = get_object_or_404(ScheduleEntry, pk=pk)  # ScheduleEntry 객체 가져오기
 
         serializer = ScheduleEntryDetailSerializer(schedule_entry, data=request.data, partial=True)
         if serializer.is_valid():
@@ -105,22 +88,17 @@ class ScheduleEntryView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, *args, **kwargs):
-
-        try:
-            schedule_entry = ScheduleEntry.objects.get(pk=pk)
-        except ScheduleEntry.DoesNotExist:
-            return Response({"error": "ScheduleEntry not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        schedule_entry = get_object_or_404(ScheduleEntry, pk=pk)  # ScheduleEntry 객체 가져오기
 
         schedule_entry.delete()
         return Response({"message": "ScheduleEntry deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
+
 class AlternativePlaceView(APIView):
     def post(self, request, schedule_entry_id, *args, **kwargs):
 
-        try:
-            schedule_entry = ScheduleEntry.objects.get(pk=schedule_entry_id)
-        except ScheduleEntry.DoesNotExist:
-            return Response({"error": "ScheduleEntry not found"}, status=status.HTTP_404_NOT_FOUND)
+        schedule_entry = get_object_or_404(ScheduleEntry, pk=schedule_entry_id)  # ScheduleEntry 객체 가져오기
 
         data = request.data.copy()
         data['schedule_entry'] = schedule_entry.id  
@@ -131,33 +109,25 @@ class AlternativePlaceView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    
     def get(self, request, schedule_entry_id, *args, **kwargs):
 
-        try:
-            schedule_entry = ScheduleEntry.objects.get(pk=schedule_entry_id)
-        except ScheduleEntry.DoesNotExist:
-            return Response({"error": "ScheduleEntry not found"}, status=status.HTTP_404_NOT_FOUND)
+        schedule_entry = get_object_or_404(ScheduleEntry, pk=schedule_entry_id)  # ScheduleEntry 객체 가져오기
 
         alternative_places = AlternativePlace.objects.filter(schedule_entry=schedule_entry)
         serializer = AlternativePlaceSerializer(alternative_places, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    def delete(self, request, pk, *args, **kwargs):
 
-        try:
-            alternative_place = AlternativePlace.objects.get(pk=pk)
-        except AlternativePlace.DoesNotExist:
-            return Response({"error": "AlternativePlace not found"}, status=status.HTTP_404_NOT_FOUND)
+    def delete(self, request, pk, *args, **kwargs):
+      
+        alternative_place = get_object_or_404(AlternativePlace, pk=pk)  # AlternativePlace 객체 가져오기
 
         alternative_place.delete()
         return Response({"message": "AlternativePlace deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
-    
-    def patch(self, request, pk, *args, **kwargs):
 
-        try:
-            alternative_place = AlternativePlace.objects.get(pk=pk)
-        except AlternativePlace.DoesNotExist:
-            return Response({"error": "AlternativePlace not found"}, status=status.HTTP_404_NOT_FOUND)
+    def patch(self, request, pk, *args, **kwargs):
+        
+        alternative_place = get_object_or_404(AlternativePlace, pk=pk)  # AlternativePlace 객체 가져오기
 
         serializer = AlternativePlaceSerializer(alternative_place, data=request.data, partial=True)
         if serializer.is_valid():
@@ -167,13 +137,9 @@ class AlternativePlaceView(APIView):
 
 class ReplaceWithAlternativePlaceView(APIView):
     def put(self, request, alternative_place_id, *args, **kwargs):
-
-        try:
-            alternative_place = AlternativePlace.objects.get(pk=alternative_place_id)
-        except AlternativePlace.DoesNotExist:
-            return Response({"error": "AlternativePlace not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        schedule_entry = alternative_place.schedule_entry
+   
+        alternative_place = get_object_or_404(AlternativePlace, pk=alternative_place_id)  # AlternativePlace 객체 가져오기
+        schedule_entry = alternative_place.schedule_entry  # 연결된 ScheduleEntry 가져오기
 
         updated_data = {
             "address": alternative_place.address,
@@ -181,6 +147,9 @@ class ReplaceWithAlternativePlaceView(APIView):
             "longitude": alternative_place.longitude,
             "category": alternative_place.category,
             "entry_name": alternative_place.name,
+            "content": alternative_place.content,  
+            "open_time": alternative_place.open_time, 
+            "close_time": alternative_place.close_time,  
         }
 
         serializer = ScheduleEntryDetailSerializer(schedule_entry, data=updated_data, partial=True)
