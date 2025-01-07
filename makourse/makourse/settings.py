@@ -20,7 +20,7 @@ SECRET_KEY = get_secret('SECRET_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     # my apps
