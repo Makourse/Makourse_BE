@@ -9,9 +9,9 @@ class ScheduleAdmin(admin.ModelAdmin):
     list_display = ('pk', 'group', 'course_name')
 admin.site.register(Schedule, ScheduleAdmin)
 
-class SeheduleEntryAdmin(admin.ModelAdmin):
+class ScheduleEntryAdmin(admin.ModelAdmin):
     list_display = ('pk', 'schedule', 'num', 'entry_name')
-admin.site.register(ScheduleEntry, SeheduleEntryAdmin)
+admin.site.register(ScheduleEntry, ScheduleEntryAdmin)
 
 class AlternativePlaceAdmin(admin.ModelAdmin):
     list_display = ('pk', 'schedule_entry', 'name')
