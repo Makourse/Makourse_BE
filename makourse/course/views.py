@@ -1,6 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import APIView
+from django.shortcuts import get_object_or_404
+
 from .models import *
 from .serializers import *
 
@@ -159,12 +162,14 @@ class ReplaceWithAlternativePlaceView(APIView):
 class ScheduleUpdateView(APIView):
     # 일정 등록
     def post(self, request, *args, **kwargs):
-        serializer = CreateCourseSerializser(data=request.data, context={'request':request})
-       
+    
+        serializer = CreateCourseSerializser(data=request.data, context={'request': request})
+
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
     # 일정 수정
