@@ -1,6 +1,6 @@
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
-import json
+import json,os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
 ]
 
 CORS_ALLOW_METHODS = [
@@ -143,8 +144,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 #https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+# 정적 파일 URL 경로
+STATIC_URL = '/static/'
 
+# 운영 환경에서 정적 파일이 수집되는 디렉토리
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# 개발 환경에서 사용하는 정적 파일 디렉토리들
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # 프로젝트 내 'static' 폴더
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
