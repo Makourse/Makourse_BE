@@ -96,17 +96,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 #     def is_anonymous(self):
 #         return False
 
-# 사용자
-class User(models.Model):
-    id = models.CharField(max_length=100, unique=True, primary_key=True) # id
-    password = models.CharField(max_length=100) # pwd
-    name = models.CharField(max_length=30) # 이름
-    profile_image = models.ImageField(upload_to='user_photo/') # 프로필 사진
-    field = models.BooleanField(default=False) # 이용약관 동의 여부
-
-#     def __str__(self): 
-#         return self.email
-
 
 class UserGroup(models.Model):
     code = models.CharField(max_length=30, unique=True, default=get_random_string)
@@ -119,7 +108,7 @@ class UserGroup(models.Model):
         self.code
 
 class GroupMembership(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     group = models.ForeignKey(UserGroup, on_delete=models.CASCADE)
 
     class Meta:
