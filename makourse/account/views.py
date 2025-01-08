@@ -222,7 +222,7 @@ class UserGroupView(APIView):
             return Response({"error": "User ID is required in the request body."}, status=status.HTTP_400_BAD_REQUEST)
 
         # User 객체 가져오기
-        user = get_object_or_404(User, id=user_id)
+        user = get_object_or_404(CustomUser, id=user_id)
 
         # UserGroup 생성
         serializer = UserGroupSerializer(data=request.data)
@@ -291,7 +291,7 @@ class GroupMembershipView(APIView):
             return Response({"error": "Invalid invitation code for the group."}, status=status.HTTP_400_BAD_REQUEST)
 
         # 사용자 가져오기
-        user = get_object_or_404(User, id=user_id)
+        user = get_object_or_404(CustomUser, id=user_id)
 
         # 사용자가 이미 그룹에 속해 있는지 확인
         if GroupMembership.objects.filter(user=user, group=group).exists():
