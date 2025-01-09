@@ -2,6 +2,7 @@ from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 import json, os
 from decouple import config
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -86,7 +87,8 @@ AUTH_USER_MODEL = 'account.CustomUser'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',  # 인증된 요청인지 확인
+        'rest_framework.permissions.AllowAny', # 개발용
+        #'rest_framework.permissions.IsAuthenticated',  # 인증된 요청인지 확인
        ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',  # JWT를 통한 인증방식 사용
@@ -95,7 +97,6 @@ REST_FRAMEWORK = {
 
 REST_USE_JWT = True
 
-from datetime import timedelta
 SIMPLE_JWT = {
     'SIGNING_KEY': 'hellomakourse',
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
