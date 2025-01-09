@@ -38,7 +38,7 @@ class CreateCourseSerializser(serializers.ModelSerializer):
     def create(self, validated_data):
         # user_id로 User 객체 가져오기
         user_id = validated_data.pop('user_id')  # 요청 데이터에서 user_id 추출
-        user = get_object_or_404(User, id=user_id)  # User 모델의 id 필드로 조회
+        user = get_object_or_404(CustomUser, id=user_id)  # User 모델의 id 필드로 조회
 
         # 일정 생성
         schedule = Schedule.objects.create(**validated_data)
@@ -55,13 +55,11 @@ class CreateCourseSerializser(serializers.ModelSerializer):
 
         return schedule
 
-
-
-
     # def validate(self, data): # 처음에 날짜만 받을거여서 넣어봤는데 필요한지는 모르겠음
     #     request_method = self.context.get('request').method
     #     if request_method == 'POST':
     #         required_fields = ['meet_date_first', 'meet_date_second','meet_date_third']
+
 
 class ListCourseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -72,8 +70,6 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = ScheduleEntry
         fields = ['pk', 'num', 'entry_name']
-
-
 
 
 class AlternativePlaceSerializer(serializers.ModelSerializer):

@@ -6,8 +6,9 @@ class MyPlace(models.Model): # 나만의 장소
     address = models.CharField(max_length=150)
     latitude = models.FloatField(default=0.0)  # 위도
     longitude = models.FloatField(default=0.0)  # 경도
+    # 일단 위도, 경도를 사용할거 같아서 주소 string 필드는 안적음
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False) # 유저가 삭제되면 나만의 장소도 삭제
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False) # 유저가 삭제되면 나만의 장소도 삭제
 
     def __str__(self):
         return self.place_name
@@ -28,7 +29,8 @@ class Schedule(models.Model): # 일정(코스)
         return self.course_name
 
 
-class ScheduleEntry(models.Model):  # 각 코스의 일정들
+class ScheduleEntry(models.Model): # 각 코스의 일정들
+   class ScheduleEntry(models.Model):  # 각 코스의 일정들
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)  # 코스의 외래키
     num = models.IntegerField(null=True, blank=True)  # 순번
     entry_name = models.CharField(max_length=30)  # 일정의 이름
@@ -41,7 +43,7 @@ class ScheduleEntry(models.Model):  # 각 코스의 일정들
     latitude = models.FloatField(default=0.0)  # 위도
     longitude = models.FloatField(default=0.0)  # 경도
 
-    # 순번 자동 증가 로직
+   # 순번 자동 증가 로직
     def save(self, *args, **kwargs):
         if self.num is None:  # num이 None인 경우에만 자동으로 계산
             last_entry = ScheduleEntry.objects.filter(schedule=self.schedule).order_by('-num').first()
@@ -50,13 +52,10 @@ class ScheduleEntry(models.Model):  # 각 코스의 일정들
             else:
                 self.num = 0  # 해당 schedule의 첫 번째 항목일 경우 0으로 설정
         super().save(*args, **kwargs)  # 부모 클래스의 save 호출
+            
 
     def __str__(self):
         return self.entry_name
-
-
-
-
 
 class AlternativePlace(models.Model): # 대안장소
     schedule_entry = models.ForeignKey(ScheduleEntry, on_delete=models.CASCADE)
@@ -69,7 +68,7 @@ class AlternativePlace(models.Model): # 대안장소
     content = models.TextField(null=True, blank = True)  # 메모
     open_time = models.TimeField(null=True, blank=True)  # 오픈 시간
     close_time = models.TimeField(null=True, blank=True)  # 마감 시간
-    
+
     category =  models.CharField(max_length=10, null=True, blank= True)
 
     def __str__(self):

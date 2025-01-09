@@ -3,21 +3,14 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import APIView
 from django.shortcuts import get_object_or_404
-
 from .models import *
 from .serializers import *
-
-from django.shortcuts import get_object_or_404
-from .serializers import *
-from .models import *
-from rest_framework.response import Response
-from rest_framework.decorators import APIView
 
 # 나만의 장소 기능
 class MyPlaceView(APIView):
     # 나만의 장소 추가
     def post(self, request, *args, **kwargs):
-        request.data['user'] = User.objects.get(id="test").id
+        request.data['user'] = CustomUser.objects.get(id="test").id
         # 일단 user_id를 "test"로 고정 (로그인 구현 전 테스트용)
         serializer = CreateMyPlaceSerializer(data=request.data)
 
@@ -53,9 +46,8 @@ class MyPlaceView(APIView):
         return Response(serializer.errors, status=400)
 
 
-
+# 스케줄 속 각 일정
 class ScheduleEntryView(APIView):
-
     def post(self, request, schedule_id, *args, **kwargs):
 
         schedule = get_object_or_404(Schedule, pk=schedule_id)
@@ -95,6 +87,7 @@ class ScheduleEntryView(APIView):
         return Response({"message": "ScheduleEntry deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 
+# 대안 장소
 class AlternativePlaceView(APIView):
     def post(self, request, schedule_entry_id, *args, **kwargs):
 
@@ -135,6 +128,8 @@ class AlternativePlaceView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+# 대안 장소로 대체
 class ReplaceWithAlternativePlaceView(APIView):
     def put(self, request, alternative_place_id, *args, **kwargs):
    
@@ -157,6 +152,7 @@ class ReplaceWithAlternativePlaceView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
     
 # 일정(코스) 등록 및 수정
 class ScheduleUpdateView(APIView):

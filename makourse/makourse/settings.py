@@ -1,6 +1,8 @@
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
-import json,os
+import json, os
+from decouple import config
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -38,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'drf_yasg',
+    'rest_framework_simplejwt.token_blacklist', # 로그아웃 구현
 ]
 
 MIDDLEWARE = [
@@ -79,6 +82,52 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ORIGINS = True
 
 ROOT_URLCONF = 'makourse.urls'
+
+AUTH_USER_MODEL = 'account.CustomUser'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny', # 개발용
+        #'rest_framework.permissions.IsAuthenticated',  # 인증된 요청인지 확인
+       ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # JWT를 통한 인증방식 사용
+    ),
+}
+
+REST_USE_JWT = True
+
+SIMPLE_JWT = {
+    'SIGNING_KEY': 'hellomakourse',
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+SOCIAL_REDIRECT_URIS = {
+    'google': 'https://api-makourse.kro.kr/account/google/callback/',
+    'naver': 'https://api-makourse.kro.kr/account/naver/callback/',
+    'kakao': 'https://api-makourse.kro.kr/account/kakao/callback/',
+}
+
+
+SOCIAL_KEYS = {
+    'google': { # 이후 프론트랑 합치면 자바스크립트 원본에 프론트 주소 추가하기
+        'client_id': config('GOOGLE_CLIENT_ID'),
+        'client_secret': config('GOOGLE_CLIENT_SECRET'),
+    },
+    'naver': {
+        'client_id': config('NAVER_CLIENT_ID'),
+        'client_secret': config('NAVER_CLIENT_SECRET'),
+    },
+    'kakao': {
+        'client_id': config('KAKAO_CLIENT_ID'),
+        'client_secret': config('KAKAO_CLIENT_SECRET'),
+    }
+}
+
 
 TEMPLATES = [
     {
@@ -154,6 +203,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),  # 프로젝트 내 'static' 폴더
 ]
+MEDIA_URL = '/media/'  # 미디어 파일 URL 경로
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # 미디어 파일 저장 경로
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
