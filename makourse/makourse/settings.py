@@ -107,9 +107,9 @@ SIMPLE_JWT = {
 }
 
 SOCIAL_REDIRECT_URIS = {
-    'google': 'http://api-makourse.kro.kr/account/google/callback/',
-    'naver': 'http://api-makourse.kro.kr/account/naver/callback/',
-    'kakao': 'http://api-makourse.kro.kr/account/kakao/callback/',
+    'google': 'https://api-makourse.kro.kr/account/google/callback/',
+    'naver': 'https://api-makourse.kro.kr/account/naver/callback/',
+    'kakao': 'https://api-makourse.kro.kr/account/kakao/callback/',
 }
 
 
