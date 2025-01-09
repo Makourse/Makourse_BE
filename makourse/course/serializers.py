@@ -72,8 +72,6 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
         fields = ['pk', 'num', 'entry_name']
 
 
-
-
 class AlternativePlaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = AlternativePlace

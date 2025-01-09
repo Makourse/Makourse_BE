@@ -174,6 +174,7 @@ class LogoutAPIView(APIView):
 class ProfileImageUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
+    # 프로필 이미지 업로드 및 수정
     def post(self, request):
         # 현재 로그인된 사용자 가져오기
         user = request.user
@@ -182,6 +183,12 @@ class ProfileImageUpdateAPIView(APIView):
         profile_image = request.FILES.get('profile_image')
         if not profile_image:
             return Response({'error': 'No image file provided'}, status=400)
+        
+        # 현재 프로필 이미지가 default가 아닌 경우 삭제
+        if user.profile_image.name != 'user_photo/default.png':
+            profile_image_path = os.path.join(settings.MEDIA_ROOT, user.profile_image.name)
+            if os.path.exists(profile_image_path):
+                os.remove(profile_image_path)  # 파일 삭제
 
         # 사용자 프로필 이미지 업데이트
         user.profile_image = profile_image
@@ -189,6 +196,8 @@ class ProfileImageUpdateAPIView(APIView):
 
         return Response({'message': 'Profile image updated successfully', 'profile_image': user.profile_image.url})
 
+
+# 프로필 사진 기본 이미지로
 class ResetProfileImageAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
