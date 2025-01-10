@@ -217,6 +217,17 @@ class ResetProfileImageAPIView(APIView):
         return Response({'message': 'Profile image reset to default', 'profile_image': user.profile_image.url})
         # 일정 기준
 
+class UserSchedulesView(APIView):
+    def get(self, request, user_pk, *args, **kwargs):
+
+        user = get_object_or_404(CustomUser, pk=user_pk)
+        group_memberships = GroupMembership.objects.filter(user=user)
+        schedules = Schedule.objects.filter(group__in=[membership.group for membership in group_memberships]).distinct()
+
+        serializer = ScheduleSerializer(schedules, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 # 그룹
 class UserGroupView(APIView):
@@ -326,12 +337,12 @@ class GroupMembershipView(APIView):
         
         membership = get_object_or_404(GroupMembership, pk=membership_id)  # GroupMembership 객체 가져오기
 
-        # 요청한 사용자가 모임장인지 확인
         user_group = membership.group  # 해당 그룹 가져오기
-        requester_membership = GroupMembership.objects.filter(group=user_group, user=request.user).first()
+        requester_user = membership.user  # membership 객체에서 사용자 가져오기
+        requester_membership = GroupMembership.objects.filter(group=user_group, user=requester_user).first()
 
-        if not requester_membership or requester_membership.role != "leader":
-            return Response({"error": "Only the group leader can remove members."}, status=status.HTTP_403_FORBIDDEN)
+        # if not requester_membership or requester_membership.role != "leader":
+        #     return Response({"error": "Only the group leader can remove members."}, status=status.HTTP_403_FORBIDDEN)
 
         membership.delete()
         return Response({"message": "User removed from group successfully."}, status=status.HTTP_204_NO_CONTENT)
