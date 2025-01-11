@@ -5,12 +5,26 @@ from rest_framework.decorators import APIView
 from django.shortcuts import get_object_or_404
 from .models import *
 from .serializers import *
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+from rest_framework.permissions import IsAuthenticated
 
 # 나만의 장소 기능
 class MyPlaceView(APIView):
+    # permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 가능
+
     # 나만의 장소 추가
+    @swagger_auto_schema( 
+        tags=["나만의 장소"],
+        operation_summary="나만의 장소 추가",
+        request_body = CreateMyPlaceSerializer,
+        responses={
+            201: openapi.Response('Place created successfully', CreateMyPlaceSerializer),
+            400: openapi.Response('Validation error'),
+        }
+    )
     def post(self, request, *args, **kwargs):
-        request.data['user'] = CustomUser.objects.get(id="test").id
+        request.data['user'] = request.user.id
         # 일단 user_id를 "test"로 고정 (로그인 구현 전 테스트용)
         serializer = CreateMyPlaceSerializer(data=request.data)
 
@@ -21,35 +35,66 @@ class MyPlaceView(APIView):
 
 
     # 나만의 장소 목록 조회
+    @swagger_auto_schema( 
+        tags=["나만의 장소"],
+        operation_summary="나만의 장소 목록 조회",
+        responses={200: ListMyPlaceSerializer(many=True)}
+    )
     def get(self, request, *args, **kwargs):
-        my_place = MyPlace.objects.all()
-        serializer = ListMyPlaceSerializer(my_place, many=True)
+        my_places = MyPlace.objects.filter(user=request.user)
+        serializer = ListMyPlaceSerializer(my_places, many=True)
         return Response(serializer.data, status=200)
 
+ 
+
+# 나만의 장소 기능
+class MyPlaceDetailView(APIView):
+    # permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 가능
 
     # 나만의 장소 삭제
-    def delete(self, request, pk, *args, **kwargs):
-        my_place = get_object_or_404(MyPlace, pk=pk)
+    @swagger_auto_schema(
+        tags=["나만의 장소"],
+        operation_summary="나만의 장소 삭제",
+        responses={204: openapi.Response("Place deleted successfully")},
+    )
+    def delete(self, request, myplace_id, *args, **kwargs):
+        my_place = get_object_or_404(MyPlace, pk=myplace_id) # user=request.user 넣기
         my_place.delete()
 
         return Response({"message":"My place deleted"}, status=204)
 
 
     # 나만의 장소 수정
-    def patch(self, request, pk, *args, **kwargs):
-        my_place = get_object_or_404(MyPlace, pk=pk)
+    @swagger_auto_schema(
+        tags=["나만의 장소"],
+        operation_summary="나만의 장소 수정",
+        request_body=CreateMyPlaceSerializer,
+        responses={
+            201: openapi.Response("Place updated successfully", CreateMyPlaceSerializer),
+            400: openapi.Response("Validation error"),
+        },
+    )
+    def patch(self, request, myplace_id, *args, **kwargs):
+        my_place = get_object_or_404(MyPlace, pk=myplace_id) # user=request.user 넣기
         serializer = CreateMyPlaceSerializer(my_place, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
-
+        
 
 # 스케줄 속 각 일정
 class ScheduleEntryView(APIView):
-    def post(self, request, schedule_id, *args, **kwargs):
+    # permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        tags=["스케줄 속 각 일정"],
+        operation_summary="스케줄 속 각 일정 추가하기",
+        request_body=ScheduleEntryDetailSerializer,
+        responses={201: ScheduleEntryDetailSerializer, 400: "Validation Error"}
+    )
+    def post(self, request, schedule_id, *args, **kwargs):
         schedule = get_object_or_404(Schedule, pk=schedule_id)
 
         data = request.data.copy()
@@ -62,16 +107,34 @@ class ScheduleEntryView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# 스케줄 속 각 일정
+class ScheduleEntryDetailView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=["스케줄 속 각 일정"],
+        operation_summary="각 일정 조회",
+        responses={200: ScheduleEntryDetailSerializer, 404: "Not Found"}
+    )
     def get(self, request, pk, *args, **kwargs):
         
-        schedule_entry = get_object_or_404(ScheduleEntry, pk=pk)  # ScheduleEntry 객체 가져오기
+        schedule_entry = get_object_or_404(ScheduleEntry, pk=pk) # user=request.user 넣기
+        # ScheduleEntry 객체 가져오기
 
         serializer = ScheduleEntryDetailSerializer(schedule_entry)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+    @swagger_auto_schema(
+        tags=["스케줄 속 각 일정"],
+        operation_summary="스케줄 속 각 일정 수정하기",
+        request_body=ScheduleEntryDetailSerializer,
+        responses={200: ScheduleEntryDetailSerializer, 400: "Validation Error"}
+    )
     def patch(self, request, pk, *args, **kwargs):
         
-        schedule_entry = get_object_or_404(ScheduleEntry, pk=pk)  # ScheduleEntry 객체 가져오기
+        schedule_entry = get_object_or_404(ScheduleEntry, pk=pk)
+        # ScheduleEntry 객체 가져오기
 
         serializer = ScheduleEntryDetailSerializer(schedule_entry, data=request.data, partial=True)
         if serializer.is_valid():
@@ -79,9 +142,15 @@ class ScheduleEntryView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+    @swagger_auto_schema(
+        tags=["스케줄 속 각 일정"],
+        operation_summary="스케줄 속 각 일정 삭제하기",
+        responses={204: "ScheduleEntry deleted successfully."}
+    )
     def delete(self, request, pk, *args, **kwargs):
-        
-        schedule_entry = get_object_or_404(ScheduleEntry, pk=pk)  # ScheduleEntry 객체 가져오기
+        schedule_entry = get_object_or_404(ScheduleEntry, pk=pk)
+        # ScheduleEntry 객체 가져오기
 
         schedule_entry.delete()
         return Response({"message": "ScheduleEntry deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
@@ -89,9 +158,18 @@ class ScheduleEntryView(APIView):
 
 # 대안 장소
 class AlternativePlaceView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=["대안장소"],
+        operation_summary="대안장소 추가하기",
+        request_body=AlternativePlaceSerializer,
+        responses={201: AlternativePlaceSerializer, 400: "Validation Error"}
+    )
     def post(self, request, schedule_entry_id, *args, **kwargs):
 
-        schedule_entry = get_object_or_404(ScheduleEntry, pk=schedule_entry_id)  # ScheduleEntry 객체 가져오기
+        schedule_entry = get_object_or_404(ScheduleEntry, pk=schedule_entry_id)
+        # ScheduleEntry 객체 가져오기
 
         data = request.data.copy()
         data['schedule_entry'] = schedule_entry.id  
@@ -103,14 +181,31 @@ class AlternativePlaceView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     
+
+    @swagger_auto_schema(
+        tags=["대안장소"],
+        operation_summary="대안장소 조회하기",
+        responses={200: AlternativePlaceSerializer(many=True)}
+    )
     def get(self, request, schedule_entry_id, *args, **kwargs):
 
-        schedule_entry = get_object_or_404(ScheduleEntry, pk=schedule_entry_id)  # ScheduleEntry 객체 가져오기
+        schedule_entry = get_object_or_404(ScheduleEntry, pk=schedule_entry_id)
+        # ScheduleEntry 객체 가져오기
 
         alternative_places = AlternativePlace.objects.filter(schedule_entry=schedule_entry)
         serializer = AlternativePlaceSerializer(alternative_places, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+# 대안 장소
+class AlternativePlaceDetailView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=["대안장소"],
+        operation_summary="대안장소 삭제하기",
+        responses={204: "Deleted Successfully"}
+    )
     def delete(self, request, pk, *args, **kwargs):
       
         alternative_place = get_object_or_404(AlternativePlace, pk=pk)  # AlternativePlace 객체 가져오기
@@ -118,6 +213,13 @@ class AlternativePlaceView(APIView):
         alternative_place.delete()
         return Response({"message": "AlternativePlace deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
+
+    @swagger_auto_schema(
+        tags=["대안장소"],
+        operation_summary="대안장소 수정하기",
+        responses={200: AlternativePlaceSerializer, 400: "Validation Error"}
+
+    )
     def patch(self, request, pk, *args, **kwargs):
         
         alternative_place = get_object_or_404(AlternativePlace, pk=pk)  # AlternativePlace 객체 가져오기
@@ -131,6 +233,13 @@ class AlternativePlaceView(APIView):
 
 # 대안 장소로 대체
 class ReplaceWithAlternativePlaceView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=["대안장소"],
+        operation_summary="일정을 대안장소로 대체",
+        responses={200: ScheduleEntryDetailSerializer, 400: "Validation Error"}
+    )
     def put(self, request, alternative_place_id, *args, **kwargs):
    
         alternative_place = get_object_or_404(AlternativePlace, pk=alternative_place_id)  # AlternativePlace 객체 가져오기
@@ -153,10 +262,19 @@ class ReplaceWithAlternativePlaceView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-    
+
+
 # 일정(코스) 등록 및 수정
 class ScheduleUpdateView(APIView):
+    #permission_classes = [IsAuthenticated]
+
     # 일정 등록
+    @swagger_auto_schema(
+        tags=["일정(코스)"],
+        operation_summary="일정(코스) 생성",
+        request_body=CreateCourseSerializser,
+        responses={201: CreateCourseSerializser, 400: "Validation Error"}
+    )
     def post(self, request, *args, **kwargs):
     
         serializer = CreateCourseSerializser(data=request.data, context={'request': request})
@@ -167,10 +285,19 @@ class ScheduleUpdateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# 일정(코스) 수정, 조회, 삭제
+class ScheduleDetailView(APIView):
+    #permission_classes = [IsAuthenticated]
 
     # 일정 수정
-    def patch(self, request, pk, *args, **kwargs):
-        schedule = get_object_or_404(Schedule, pk=pk)
+    @swagger_auto_schema(
+        tags=["일정(코스)"],
+        operation_summary="일정 수정",
+        request_body=CreateCourseSerializser,
+        responses={200: CreateCourseSerializser, 400: "Validation Error"}
+    )
+    def patch(self, request, schedule_id, *args, **kwargs):
+        schedule = get_object_or_404(Schedule, pk=schedule_id)
         serializer = CreateCourseSerializser(schedule, data=request.data, partial=True, context={'request': request})
 
         if serializer.is_valid():
@@ -180,24 +307,35 @@ class ScheduleUpdateView(APIView):
 
 
     # 일정 조회
-    def get(self, request, pk=None, *args, **kwargs):
-        if pk: # 특정일정 상세조회
-            schedule = get_object_or_404(Schedule, pk=pk)
-            serializer = CreateCourseSerializser(schedule)
+    @swagger_auto_schema(
+        tags=["일정(코스)"],
+        operation_summary="일정 상세 조회",
+        operation_description="url에 일정 pk를 넣으면 해당 일정 상세가 조회됩니다.",
+        responses={200: "Schedule List or Detail"}
+    )
+    def get(self, request, schedule_id, *args, **kwargs):
+        # 특정일정 상세조회
+        schedule = get_object_or_404(Schedule, pk=schedule_id)
+        serializer = CreateCourseSerializser(schedule)
 
-            schedule_entry = ScheduleEntry.objects.filter(schedule=pk)
-            entry_serializer = ScheduleEntrySerializer(schedule_entry, many=True)
-            return Response({'course':serializer.data, 'entry':entry_serializer.data}, status=200)
-        else: # 일정 목록 조회
-            schedules = Schedule.objects.all()
-            serializer = ListCourseSerializer(schedules, many=True)
+        schedule_entry = ScheduleEntry.objects.filter(schedule=schedule_id)
+        entry_serializer = ScheduleEntrySerializer(schedule_entry, many=True)
+        return Response({'course':serializer.data, 'entry':entry_serializer.data}, status=200)
+        # else: # 일정 목록 조회
+        #     schedules = Schedule.objects.filter()
+        #     serializer = ListCourseSerializer(schedules, many=True)
             
-            return Response(serializer.data, status=200)
+        #     return Response(serializer.data, status=200)
 
 
     # 일정 삭제
-    def delete(self, request, pk, *args, **kwargs):
-        schedule = get_object_or_404(Schedule, pk=pk)
+    @swagger_auto_schema(
+        tags=["일정(코스)"],
+        operation_summary="일정 삭제",
+        responses={204: "Deleted Successfully"}
+    )
+    def delete(self, request, schedule_id, *args, **kwargs):
+        schedule = get_object_or_404(Schedule, pk=schedule_id)
         schedule.delete()
         
         return Response({"message": "Schdeule deleted"}, status=204)
