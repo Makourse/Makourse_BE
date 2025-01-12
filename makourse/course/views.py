@@ -23,9 +23,10 @@ class MyPlaceView(APIView):
             400: openapi.Response('Validation error'),
         }
     )
-    def post(self, request, *args, **kwargs):
-        request.data['user'] = request.user.id
-        # 일단 user_id를 "test"로 고정 (로그인 구현 전 테스트용)
+    def post(self, request, pk, *args, **kwargs):
+        request.data['user'] = pk
+        # request.user.id
+        # 일단 url로 user pk 받기
         serializer = CreateMyPlaceSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -40,8 +41,8 @@ class MyPlaceView(APIView):
         operation_summary="나만의 장소 목록 조회",
         responses={200: ListMyPlaceSerializer(many=True)}
     )
-    def get(self, request, *args, **kwargs):
-        my_places = MyPlace.objects.filter(user=request.user)
+    def get(self, request, pk, *args, **kwargs):
+        my_places = MyPlace.objects.filter(user=pk)
         serializer = ListMyPlaceSerializer(my_places, many=True)
         return Response(serializer.data, status=200)
 
