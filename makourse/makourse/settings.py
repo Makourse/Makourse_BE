@@ -6,6 +6,7 @@ from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 secret_file = BASE_DIR / 'secrets.json'
 
 with open(secret_file) as file:
@@ -106,7 +107,8 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-SOCIAL_REDIRECT_URIS = {
+
+SOCIAL_REDIRECT_URIS = { # 배포용
     'google': 'https://api-makourse.kro.kr/account/google/callback/',
     'naver': 'https://api-makourse.kro.kr/account/naver/callback/',
     'kakao': 'https://api-makourse.kro.kr/account/kakao/callback/',

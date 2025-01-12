@@ -12,6 +12,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from urllib.parse import unquote
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 from django.contrib.auth import get_user_model
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 # 1. Authorization code 받아오기(프론트가 소셜에서)
 # 2. Authorizaiton code를 가지고 서버가 소셜에게 Access Token 요청
@@ -32,6 +34,20 @@ class SocialLoginAPIView(APIView):
         # POST 로직 재사용
         return self.post(request, provider)
 
+
+    @swagger_auto_schema(
+        tags=['유저'],
+        operation_summary="소셜 로그인",
+        operation_description="Authorization code를 통해 로그인하고 JWT token을 반환합니다.",
+        responses={200: "JWT Token with user info", 400: "Error message"},
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'code': openapi.Schema(type=openapi.TYPE_STRING, description='Authorization code from the front end')
+            },
+            required=['code']
+        )
+    )
     def post(self, request, provider):
         code = request.data.get('code') # 프론트에서 전달한 Authorization Code
         if not code:
@@ -146,6 +162,22 @@ class SocialLoginAPIView(APIView):
 class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        tags=['유저'],
+        operation_summary="로그아웃",
+        operation_description="로그아웃하면 유저의 `is_logged_in`는 false가 됩니다.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'refresh': openapi.Schema(type=openapi.TYPE_STRING, description='The refresh token used for logging out.')
+            },
+            required=['refresh']
+        ),
+        responses={
+            200: openapi.Response(description="User logged out successfully."),
+            400: openapi.Response(description="Error message (e.g., invalid token or missing refresh token).")
+        }
+    )
     def post(self, request):
        refresh_token = request.data.get('refresh')  # Refresh Token 받기
        if not refresh_token:
@@ -175,6 +207,27 @@ class ProfileImageUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     # 프로필 이미지 업로드 및 수정
+    @swagger_auto_schema(
+        tags=['유저'],
+        operation_summary="프로필 사진 업로드",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'profile_image': openapi.Schema(type=openapi.TYPE_FILE, description='The new profile image file.')
+            },
+            required=['profile_image']
+        ),
+        responses={
+            200: openapi.Response(description="Profile image updated successfully.", schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'message': openapi.Schema(type=openapi.TYPE_STRING, description='Success message'),
+                    'profile_image': openapi.Schema(type=openapi.TYPE_STRING, description='URL of the updated profile image')
+                }
+            )),
+            400: openapi.Response(description="Error message (e.g., no image file provided).")
+        }
+    )
     def post(self, request):
         # 현재 로그인된 사용자 가져오기
         user = request.user
@@ -201,6 +254,20 @@ class ProfileImageUpdateAPIView(APIView):
 class ResetProfileImageAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        tags=['유저'],
+        operation_summary="기본 프로필로 reset",
+        responses={
+            200: openapi.Response(description="Profile image reset to default.", schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'message': openapi.Schema(type=openapi.TYPE_STRING, description='Success message'),
+                    'profile_image': openapi.Schema(type=openapi.TYPE_STRING, description='URL of the default profile image')
+                }
+            )),
+            400: openapi.Response(description="Error message if something goes wrong.")
+        }
+    )
     def post(self, request):
         user = request.user
 
@@ -218,6 +285,14 @@ class ResetProfileImageAPIView(APIView):
         # 일정 기준
 
 class UserSchedulesView(APIView):
+    @swagger_auto_schema(
+        tags=['일정(코스)'],
+        operation_summary="해당 유저의 일정 목록 조회",
+        responses={
+            200: openapi.Response(description="List of user schedules.", schema=ScheduleSerializer),
+            404: openapi.Response(description="User not found.")
+        }
+    )
     def get(self, request, user_pk, *args, **kwargs):
 
         user = get_object_or_404(CustomUser, pk=user_pk)
@@ -231,6 +306,15 @@ class UserSchedulesView(APIView):
 
 # 그룹
 class UserGroupView(APIView):
+    #permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=['그룹'],
+        operation_summary="그룹 생성",
+        operation_description="유저가 일정을 생성하면 자동적으로 그룹이 생성됩니다.",
+        request_body=UserGroupSerializer,
+        responses={201: UserGroupSerializer, 400: "Validation Error"}
+    )
     def post(self, request, schedule_id, *args, **kwargs):
     
         # Schedule 객체 가져오기
@@ -268,6 +352,13 @@ class UserGroupView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+    @swagger_auto_schema(
+        tags=['그룹'],
+        operation_summary="그룹 조회",
+        operation_description="해당 일정의 그룹 멤버들을 조회합니다..",
+        responses={200: "User Group and Members Info", 404: "Group not found"}
+    )
     def get(self, request, schedule_id, *args, **kwargs):
         
         schedule = get_object_or_404(Schedule, pk=schedule_id)  # Schedule 객체 가져오기
@@ -291,7 +382,21 @@ class UserGroupView(APIView):
 
 
 
-class GroupMembershipView(APIView):
+class GroupMembershipJoinView(APIView):
+    @swagger_auto_schema(
+        tags=['그룹'],
+        operation_summary="초대된 유저 그룹에 추가",
+        operation_description="특정 일정에 초대된 그룹 코드로 유저를 그룹에 추가합니다",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'code': openapi.Schema(type=openapi.TYPE_STRING, description='Invitation code'),
+                'user_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='User ID to add to group'),
+            },
+            required=['code', 'user_id']
+        ),
+        responses={201: "User added to group", 400: "Error message"}
+    )
     def post(self, request, group_id, *args, **kwargs):
         
         # 그룹 가져오기
@@ -333,6 +438,14 @@ class GroupMembershipView(APIView):
         }, status=status.HTTP_201_CREATED)
 
 
+
+class GroupMembershipDeleteView(APIView):
+    @swagger_auto_schema(
+        tags=['그룹'],
+        operation_summary="유저 그룹에서 내보내기",
+        operation_description="그룹의 리더가 멤버를 내보냅니다.",
+        responses={204: "User removed from group", 400: "Error message"}
+    )
     def delete(self, request, membership_id, *args, **kwargs):
         
         membership = get_object_or_404(GroupMembership, pk=membership_id)  # GroupMembership 객체 가져오기
