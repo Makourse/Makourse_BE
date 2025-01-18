@@ -115,9 +115,9 @@ SIMPLE_JWT = {
 # }
 
 SOCIAL_REDIRECT_URIS = { # 프론트 배포용
-    'google': 'https://makourse.my/',
-    'naver': 'https://makourse.my/',
-    'kakao': 'https://makourse.my/',
+    'google': 'https://makourse.my/account/google/callback/',
+    'naver': 'https://makourse.my/account/naver/callback/',
+    'kakao': 'https://makourse.my/account/kakao/callback/',
 }
 
 
