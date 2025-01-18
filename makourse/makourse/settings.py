@@ -108,10 +108,16 @@ SIMPLE_JWT = {
 }
 
 
-SOCIAL_REDIRECT_URIS = { # 배포용
-    'google': 'https://api-makourse.kro.kr/account/google/callback/',
-    'naver': 'https://api-makourse.kro.kr/account/naver/callback/',
-    'kakao': 'https://api-makourse.kro.kr/account/kakao/callback/',
+# SOCIAL_REDIRECT_URIS = { # 배포용
+#     'google': 'https://api-makourse.kro.kr/account/google/callback/',
+#     'naver': 'https://api-makourse.kro.kr/account/naver/callback/',
+#     'kakao': 'https://api-makourse.kro.kr/account/kakao/callback/',
+# }
+
+SOCIAL_REDIRECT_URIS = { # 프론트 배포용
+    'google': 'https://makourse.my/',
+    'naver': 'https://makourse.my/',
+    'kakao': 'https://makourse.my/',
 }
 
 
