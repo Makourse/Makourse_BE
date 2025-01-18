@@ -114,10 +114,22 @@ SIMPLE_JWT = {
 #     'kakao': 'https://api-makourse.kro.kr/account/kakao/callback/',
 # }
 
-SOCIAL_REDIRECT_URIS = { # 프론트 배포용
-    'google': 'https://makourse.my/account/google/callback/',
-    'naver': 'https://makourse.my/account/naver/callback/',
-    'kakao': 'https://makourse.my/account/kakao/callback/',
+SOCIAL_REDIRECT_URIS = { # 로컬, 백, 프론트 url 모두 설정
+    'google': [
+        'https://makourse.my/account/google/callback/',
+        'http://localhost:5173/account/google/callback/',
+        'https://api-makourse.kro.kr/account/google/callback/',
+    ],
+    'naver': [
+        'https://makourse.my/account/naver/callback/',
+        'http://localhost:5173/account/naver/callback/',
+        'https://api-makourse.kro.kr/account/naver/callback/',
+    ],
+    'kakao': [
+        'https://makourse.my/account/kakao/callback/',
+        'http://localhost:5173/account/kakao/callback/',
+        'https://api-makourse.kro.kr/account/kakao/callback/',
+    ],
 }
 
 

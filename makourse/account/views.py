@@ -55,12 +55,19 @@ class SocialLoginAPIView(APIView):
 
         # 소셜 키와 리디렉션 URI 가져오기
         social_keys = settings.SOCIAL_KEYS.get(provider)
-        redirect_uri = settings.SOCIAL_REDIRECT_URIS.get(provider)
-
-        if not social_keys or not redirect_uri:
+        if not social_keys:
             return Response({'error': f'{provider} is not a supported provider'}, status=400)
 
-        
+
+        # 적절한 리디렉션 URI 선택
+        host = request.get_host()  # 요청의 호스트 가져오기
+        redirect_uris = settings.SOCIAL_REDIRECT_URIS.get(provider, [])
+        redirect_uri = self.get_redirect_uri(redirect_uris, host)
+        if not redirect_uri:
+            return Response({'error': 'No valid redirect URI found'}, status=400)
+
+
+
         # Access Token 요청 (by using authorization code)
         token_data = self.get_access_token(provider, code, social_keys, redirect_uri)
         if 'error' in token_data:
@@ -104,6 +111,14 @@ class SocialLoginAPIView(APIView):
             
         })
 
+
+    # 리디렉션 URL 선택 로직 추가
+    def get_redirect_uri(self, redirect_uris, host):
+        for uri in redirect_uris:
+            if host in uri:  # 현재 요청의 host가 URI에 포함된 경우
+                return uri
+        return None  # 해당하는 URI가 없을 경우
+    
 
     # access token 요청하기
     def get_access_token(self, provider, code, social_keys, redirect_uri):
