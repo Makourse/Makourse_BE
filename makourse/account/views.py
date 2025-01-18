@@ -14,6 +14,7 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from urllib.parse import urlparse
 
 # 1. Authorization code 받아오기(프론트가 소셜에서)
 # 2. Authorizaiton code를 가지고 서버가 소셜에게 Access Token 요청
@@ -115,9 +116,10 @@ class SocialLoginAPIView(APIView):
     # 리디렉션 URL 선택 로직 추가
     def get_redirect_uri(self, redirect_uris, host):
         for uri in redirect_uris:
-            if host in uri:  # 현재 요청의 host가 URI에 포함된 경우
+            parsed_uri = urlparse(uri)  # URI를 파싱하여 구성 요소 분리
+            if parsed_uri.netloc == host:  # 도메인(netloc)이 정확히 일치하는지 확인
                 return uri
-        return None  # 해당하는 URI가 없을 경우
+        return None
     
 
     # access token 요청하기
