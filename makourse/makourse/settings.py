@@ -116,9 +116,9 @@ SIMPLE_JWT = {
 
 SOCIAL_REDIRECT_URIS = { # 로컬, 백, 프론트 url 모두 설정
     'google': [
-        'https://makourse.my/account/google/callback/',
-        'http://localhost:5173/account/google/callback/',
-        'https://api-makourse.kro.kr/account/google/callback/',
+        'https://makourse.my/account/google/callback/', # 0 : 프론트 배포 도메인
+        'http://localhost:5173/account/google/callback/', # 1 : 로컬 환경
+        'https://api-makourse.kro.kr/account/google/callback/', # 2 : 백엔드 배포 도메인
     ],
     'naver': [
         'https://makourse.my/account/naver/callback/',
