@@ -24,8 +24,7 @@ jobs:
           echo "SSH 연결 실패. 키와 권한 확인 필요.";
           exit 1;
         }
-
-
+    
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -35,43 +34,35 @@ jobs:
         script: |
           set -e
           echo "EC2 배포 시작"
-          
-          # 프로젝트 디렉토리 확인 및 이동
-          cd /home/ubuntu/Makourse_BE || {
+    
+          cd /home/ubuntu/Makourse_BE/makourse || {
             echo "프로젝트 디렉토리가 존재하지 않음"; exit 1;
           }
-          echo "프로젝트 디렉토리 확인 완료"
-
-          # Git 리포지토리 확인 및 설정
-          if [ -d .git ]; then
-            echo "Git 리포지토리 확인 완료"
-            git remote set-url origin git@github.com:Makourse/Makourse_BE.git
-          else
-            echo ".git 디렉토리가 없습니다. Git 리포지토리 초기화 중..."
-            git init
-            git remote add origin git@github.com:Makourse/Makourse_BE.git
-          fi
-
+    
+          echo "Git 리모트 주소 설정 중..."
+          git remote set-url origin git@github.com:Makourse/Makourse_BE.git
+    
           echo "GitHub에서 최신 코드 가져오는 중..."
           git fetch --all
           git reset --hard origin/main
-
+    
           echo "가상환경 설정 중..."
           if [ ! -d "/home/ubuntu/makourse_env" ]; then
             python3.12 -m venv /home/ubuntu/makourse_env
           fi
           source /home/ubuntu/makourse_env/bin/activate 
-
+    
           echo "의존성 설치 중..."
           pip install --upgrade pip
           pip install -r requirements.txt
-
+    
           echo "마이그레이션 및 정적 파일 수집 중..."
           python manage.py migrate
           python manage.py collectstatic --noinput
-
+    
           echo "서비스 재시작 중..."
           uwsgi --ini uwsgi.ini
           sudo systemctl restart nginx
-
+    
           echo "배포 완료!"
+
