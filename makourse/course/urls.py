@@ -17,4 +17,9 @@ urlpatterns = [
     # 일정(코스)
     path('schedule/', ScheduleUpdateView.as_view()), # 일정(코스) 등록(post)
     path('schedule/<int:schedule_id>/', ScheduleDetailView.as_view()), # 일정(코스) 상세조회(get), 수정(patch), 삭제(delete)
+
+
+    # 자동 배포 확인용 api
+    path('test-api/', test_api, name='test_api'), 
+
 ]
