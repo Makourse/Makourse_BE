@@ -52,7 +52,7 @@ jobs:
 
           echo "의존성 설치 중..."
           pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r /home/ubuntu/Makourse_BE/makourse/requirements.txt
 
           echo "마이그레이션 및 정적 파일 수집 중..."
           python manage.py migrate
