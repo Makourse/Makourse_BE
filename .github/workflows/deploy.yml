@@ -18,6 +18,13 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.EC2_KEY }}
 
+    - name: Test SSH Connection
+      run: |
+        ssh -T git@github.com || {
+          echo "GitHub SSH 연결 실패. SSH 키 확인 필요.";
+          exit 1;
+        }
+
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v1.0.3
       with:
