@@ -22,7 +22,12 @@ jobs:
         debug: true
         script: |
           echo "SSH 연결 테스트 중..."
-      
+
+    - name: Start SSH Agent and Add Key
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.EC2_KEY }}
+
     - name: EC2에 배포
       uses: appleboy/ssh-action@v0.1.7
       with:
@@ -36,6 +41,7 @@ jobs:
           # 프로젝트 디렉토리로 이동
           cd /home/ubuntu/Makourse_BE/makourse          
           echo "GitHub에서 최신 코드 가져오는 중..."
+          git remote set-url origin git@github.com:Makourse/Makourse_BE.git
           git fetch --all
           git reset --hard origin/main
         
