@@ -17,7 +17,14 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.12'  # 서버의 Python 버전과 일치
-
+    - name: 디렉토리 및 파일 확인
+      run: |
+        echo "현재 디렉토리 확인:"
+        pwd
+        echo "디렉토리 내용:"
+        ls -al
+        echo "requirements.txt 내용:"
+        cat requirements.txt || echo "requirements.txt 파일이 없습니다."
     - name: 필수 라이브러리 설치
       run: |
         echo "pip 업그레이드 및 필수 라이브러리 설치 중..."
