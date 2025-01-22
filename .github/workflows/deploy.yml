@@ -19,7 +19,7 @@ jobs:
         ssh-private-key: ${{ secrets.EC2_KEY }}
 
     - name: Deploy to EC2
-      uses: appleboy/ssh-action@v0.1.7
+      uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
