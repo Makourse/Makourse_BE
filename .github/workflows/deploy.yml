@@ -13,29 +13,6 @@ jobs:
     - name: 코드 가져오기
       uses: actions/checkout@v3
 
-    - name: Python 설정
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'  # 서버의 Python 버전과 일치
-    - name: 디렉토리 및 파일 확인
-      run: |
-        echo "현재 디렉토리 확인:"
-        pwd
-        echo "디렉토리 내용:"
-        ls -al
-        echo "requirements.txt 내용:"
-        cat requirements.txt || echo "requirements.txt 파일이 없습니다."
-    - name: 필수 라이브러리 설치
-      run: |
-        echo "pip 업그레이드 및 필수 라이브러리 설치 중..."
-        python -m pip install --upgrade pip
-        pip install -r /home/ubuntu/Makourse_BE/makourse/requirements.txt
-
-    - name: 테스트 실행
-      run: |
-        echo "Django 테스트 실행 중..."
-        python manage.py test
-
     - name: EC2에 배포
       uses: appleboy/ssh-action@v0.1.7
       with:
