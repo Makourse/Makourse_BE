@@ -340,3 +340,11 @@ class ScheduleDetailView(APIView):
         schedule.delete()
         
         return Response({"message": "Schdeule deleted"}, status=204)
+
+from django.http import JsonResponse
+
+def test_api(request):
+    return JsonResponse({
+        "status": "success",
+        "message": "Test API is working correctly!"
+    })
