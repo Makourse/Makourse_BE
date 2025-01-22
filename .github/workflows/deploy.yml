@@ -13,6 +13,16 @@ jobs:
     - name: 코드 가져오기
       uses: actions/checkout@v3
 
+    - name: Debug SSH Connection
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        debug: true
+        script: |
+          echo "SSH 연결 테스트 중..."
+      
     - name: EC2에 배포
       uses: appleboy/ssh-action@v0.1.7
       with:
@@ -20,30 +30,31 @@ jobs:
         username: ${{ secrets.EC2_USER }}   # EC2 사용자 이름 (예: ubuntu)
         key: ${{ secrets.EC2_KEY }}         # EC2 개인 키
         script: |
+          set -e  # 스크립트 실행 중 오류 발생 시 중단
           echo "EC2 배포 시작"
-
+        
           # 프로젝트 디렉토리로 이동
           cd /home/ubuntu/Makourse_BE/makourse          
           echo "GitHub에서 최신 코드 가져오는 중..."
           git fetch --all
           git reset --hard origin/main
-
+        
           echo "가상환경 설정 중..."
           if [ ! -d "/home/ubuntu/makourse_env" ]; then
             python3.12 -m venv /home/ubuntu/makourse_env
           fi
           source /home/ubuntu/makourse_env/bin/activate 
-
+        
           echo "의존성 설치 중..."
           pip install --upgrade pip
           pip install -r /home/ubuntu/Makourse_BE/makourse/requirements.txt
-
+        
           echo "마이그레이션 및 정적 파일 수집 중..."
           python manage.py migrate
           python manage.py collectstatic --noinput
-
+        
           echo "서비스 재시작 중..."
           uwsgi --ini /home/ubuntu/Makourse_BE/makourse/uwsgi.ini
           sudo systemctl restart nginx
-
+        
           echo "배포 완료!"
