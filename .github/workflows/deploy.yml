@@ -29,7 +29,6 @@ jobs:
           exit 1;
         fi
 
-
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -38,8 +37,10 @@ jobs:
         key: ${{ secrets.EC2_KEY }}
         script: |
           set -e
+          echo "============================"
           echo "EC2 배포 시작"
-    
+          echo "============================"
+
           # 디렉토리 확인 및 권한 검사
           echo "현재 디렉토리 상태 확인:"
           ls -al /home/ubuntu/Makourse_BE || {
@@ -47,17 +48,21 @@ jobs:
           }
           echo "현재 사용자 확인:"
           whoami
-    
+          echo "현재 사용자 권한:"
+          id
+
           cd /home/ubuntu/Makourse_BE/makourse || {
             echo "프로젝트 디렉토리가 존재하지 않음"; exit 1;
           }
-    
-          echo "Git 리모트 주소 설정 중..."
+
+          echo "============================"
+          echo "Git 리모트 주소 확인 및 설정"
+          echo "============================"
           git remote -v || echo "Git 리모트 확인 실패"
           git remote set-url origin git@github.com:Makourse/Makourse_BE.git || {
             echo "Git 리모트 설정 실패"; exit 1;
           }
-    
+
           echo "GitHub에서 최신 코드 가져오는 중..."
           git fetch --all || {
             echo "git fetch 실패"; exit 1;
@@ -65,8 +70,10 @@ jobs:
           git reset --hard origin/main || {
             echo "git reset 실패"; exit 1;
           }
-    
-          echo "가상환경 설정 중..."
+
+          echo "============================"
+          echo "가상환경 설정 및 활성화"
+          echo "============================"
           if [ ! -d "/home/ubuntu/makourse_env" ]; then
             echo "가상환경 디렉토리가 존재하지 않아 생성 중..."
             python3.12 -m venv /home/ubuntu/makourse_env || {
@@ -76,29 +83,37 @@ jobs:
           source /home/ubuntu/makourse_env/bin/activate || {
             echo "가상환경 활성화 실패"; exit 1;
           }
-    
-          echo "의존성 설치 중..."
+
+          echo "============================"
+          echo "의존성 설치"
+          echo "============================"
           pip install --upgrade pip || {
             echo "pip 업그레이드 실패"; exit 1;
           }
           pip install -r requirements.txt || {
             echo "의존성 설치 실패"; exit 1;
           }
-    
-          echo "마이그레이션 및 정적 파일 수집 중..."
+
+          echo "============================"
+          echo "마이그레이션 및 정적 파일 수집"
+          echo "============================"
           python manage.py migrate || {
             echo "마이그레이션 실패"; exit 1;
           }
           python manage.py collectstatic --noinput || {
             echo "정적 파일 수집 실패"; exit 1;
           }
-    
-          echo "서비스 재시작 중..."
+
+          echo "============================"
+          echo "서비스 재시작"
+          echo "============================"
           uwsgi --ini uwsgi.ini || {
             echo "uWSGI 시작 실패"; exit 1;
           }
           sudo systemctl restart nginx || {
             echo "nginx 재시작 실패"; exit 1;
           }
-    
+
+          echo "============================"
           echo "배포 완료!"
+          echo "============================"
