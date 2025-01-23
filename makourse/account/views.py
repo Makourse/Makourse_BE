@@ -63,10 +63,10 @@ class SocialLoginAPIView(APIView):
         # 적절한 리디렉션 URI 선택 (0: 프론트 배포 도메인, 1: 로컬, 2: 백엔드 배포 도메인)
         address = request.data.get('address')
         redirect_uris = settings.SOCIAL_REDIRECT_URIS.get(provider, [])
-        redirect_uri = redirect_uris[address]
+        redirect_uri = redirect_uris[1]
 
-        #print("Redirect URI:", redirect_uri) # 코트 확인
-        
+        print("Redirect URI:", redirect_uri) # 코트 확인
+
         if not redirect_uri:
             return Response({'error': 'No valid redirect URI found'}, status=400)
 
