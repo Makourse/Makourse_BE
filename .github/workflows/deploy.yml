@@ -55,21 +55,31 @@ jobs:
           python manage.py collectstatic --noinput
 
           echo "기존 uWSGI 프로세스 종료 중..."
-          timeout 10 pkill -f uwsgi || echo "uWSGI 프로세스 없음. 계속 진행합니다."
+          pkill -f uwsgi && echo "uWSGI 프로세스 종료 완료." || echo "uWSGI 프로세스 없음. 계속 진행합니다."
+          
+          # 확인 후 강제 종료
+          if pgrep -f uwsgi > /dev/null; then
+              echo "uWSGI 프로세스 강제 종료 중..."
+              pkill -9 -f uwsgi
+              echo "강제 종료 완료."
+          fi
           
           echo "남아 있는 소켓 및 PID 파일 제거 중..."
-          sudo rm -f /home/ubuntu/Makourse_BE/makourse/uwsgi.sock
-          sudo rm -f /tmp/project-master.pid
+          [ -e /home/ubuntu/Makourse_BE/makourse/uwsgi.sock ] && sudo rm -f /home/ubuntu/Makourse_BE/makourse/uwsgi.sock
+          [ -e /tmp/project-master.pid ] && sudo rm -f /tmp/project-master.pid
           
           echo "uWSGI 실행"
-          /home/ubuntu/makourse_env/bin/uwsgi --ini uwsgi.ini || {
+          if /home/ubuntu/makourse_env/bin/uwsgi --ini uwsgi.ini > /home/ubuntu/Makourse_BE/makourse/django.log 2>&1; then
+              echo "uWSGI 실행 성공. 안정화 대기 중..."
+              sleep 3
+          else
               echo "uWSGI 실행 실패. 로그 확인:"
               tail -n 50 /home/ubuntu/Makourse_BE/makourse/django.log
               exit 1
-          }
+          fi
 
           echo "Nginx 서비스 재시작"
-          sudo systemctl restart nginx || {
+          sudo service nginx restart || {
               echo "Nginx 재시작 실패. 에러 로그:"
               sudo tail -n 50 /var/log/nginx/error.log
               exit 1
