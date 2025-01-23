@@ -55,8 +55,12 @@ jobs:
           python manage.py collectstatic --noinput
 
           echo "기존 uWSGI 프로세스 종료 중..."
-          pkill -f uwsgi || echo "uWSGI 프로세스 없음. 계속 진행합니다."
-
+          timeout 10 pkill -f uwsgi || echo "uWSGI 프로세스 없음. 계속 진행합니다."
+          
+          echo "남아 있는 소켓 및 PID 파일 제거 중..."
+          sudo rm -f /home/ubuntu/Makourse_BE/makourse/uwsgi.sock
+          sudo rm -f /tmp/project-master.pid
+          
           echo "uWSGI 실행"
           /home/ubuntu/makourse_env/bin/uwsgi --ini uwsgi.ini || {
               echo "uWSGI 실행 실패. 로그 확인:"
