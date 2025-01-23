@@ -18,13 +18,6 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.EC2_KEY }}
 
-    - name: Test SSH Connection
-      run: |
-        echo "SSH 연결 테스트 중..."
-        ssh -o StrictHostKeyChecking=no -T git@github.com || true
-        echo "SSH 연결 테스트 완료"
-
-
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -36,80 +29,46 @@ jobs:
           echo "============================"
           echo "EC2 배포 시작"
           echo "============================"
-
-          # 디렉토리 확인 및 권한 검사
           echo "현재 디렉토리 상태 확인:"
           ls -al /home/ubuntu/Makourse_BE || {
             echo "Makourse_BE 디렉토리가 존재하지 않습니다."; exit 1;
           }
-          echo "현재 사용자 확인:"
-          whoami
-          echo "현재 사용자 권한:"
-          id
+          cd /home/ubuntu/Makourse_BE/makourse
 
-          cd /home/ubuntu/Makourse_BE/makourse || {
-            echo "프로젝트 디렉토리가 존재하지 않음"; exit 1;
-          }
-
-          echo "============================"
           echo "Git 리모트 주소 확인 및 설정"
-          echo "============================"
-          git remote -v || echo "Git 리모트 확인 실패"
-          git remote set-url origin git@github.com:Makourse/Makourse_BE.git || {
-            echo "Git 리모트 설정 실패"; exit 1;
-          }
+          git remote set-url origin git@github.com:Makourse/Makourse_BE.git
+          git fetch --all
+          git reset --hard origin/main
 
-          echo "GitHub에서 최신 코드 가져오는 중..."
-          git fetch --all || {
-            echo "git fetch 실패"; exit 1;
-          }
-          git reset --hard origin/main || {
-            echo "git reset 실패"; exit 1;
-          }
-
-          echo "============================"
-          echo "가상환경 설정 및 활성화"
-          echo "============================"
+          echo "가상환경 설정"
           if [ ! -d "/home/ubuntu/makourse_env" ]; then
-            echo "가상환경 디렉토리가 존재하지 않아 생성 중..."
-            python3.12 -m venv /home/ubuntu/makourse_env || {
-              echo "가상환경 생성 실패"; exit 1;
-            }
+            python3.12 -m venv /home/ubuntu/makourse_env
           fi
-          source /home/ubuntu/makourse_env/bin/activate || {
-            echo "가상환경 활성화 실패"; exit 1;
-          }
+          source /home/ubuntu/makourse_env/bin/activate
 
-          echo "============================"
           echo "의존성 설치"
-          echo "============================"
-          pip install --upgrade pip || {
-            echo "pip 업그레이드 실패"; exit 1;
-          }
-          pip install -r requirements.txt || {
-            echo "의존성 설치 실패"; exit 1;
-          }
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
-          echo "============================"
           echo "마이그레이션 및 정적 파일 수집"
-          echo "============================"
-          python manage.py migrate || {
-            echo "마이그레이션 실패"; exit 1;
-          }
-          python manage.py collectstatic --noinput || {
-            echo "정적 파일 수집 실패"; exit 1;
+          python manage.py migrate
+          python manage.py collectstatic --noinput
+
+          echo "기존 uWSGI 프로세스 종료 중..."
+          pkill -f uwsgi || echo "uWSGI 프로세스 없음. 계속 진행합니다."
+
+          echo "uWSGI 실행"
+          /home/ubuntu/makourse_env/bin/uwsgi --ini uwsgi.ini || {
+              echo "uWSGI 실행 실패. 로그 확인:"
+              tail -n 50 /home/ubuntu/Makourse_BE/makourse/django.log
+              exit 1
           }
 
-          echo "============================"
-          echo "서비스 재시작"
-          echo "============================"
-          uwsgi --ini uwsgi.ini || {
-            echo "uWSGI 시작 실패"; exit 1;
-          }
+          echo "Nginx 서비스 재시작"
           sudo systemctl restart nginx || {
-            echo "nginx 재시작 실패"; exit 1;
+              echo "Nginx 재시작 실패. 에러 로그:"
+              sudo tail -n 50 /var/log/nginx/error.log
+              exit 1
           }
 
-          echo "============================"
           echo "배포 완료!"
-          echo "============================"
