@@ -30,10 +30,11 @@ class CreateCourseSerializser(serializers.ModelSerializer):
 
     class Meta:
         model = Schedule
-        fields = [
-            'meet_date_first', 'meet_date_second', 'meet_date_third',
-            'course_name', 'meet_place', 'latitude', 'longitude', 'user_id'
-        ]
+        fields = '__all__'
+        # [
+        #     'meet_date_first', 'meet_date_second', 'meet_date_third',
+        #     'course_name', 'meet_place', 'latitude', 'longitude', 'user_id'
+        # ]
 
     def create(self, validated_data):
         # user_id로 User 객체 가져오기
