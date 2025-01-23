@@ -299,21 +299,33 @@ class ResetProfileImageAPIView(APIView):
 class UserSchedulesView(APIView):
     @swagger_auto_schema(
         tags=['일정(코스)'],
-        operation_summary="해당 유저의 일정 목록 조회",
+        operation_summary="해당 유저의 정보 및 일정 목록 조회",
         responses={
             200: openapi.Response(description="List of user schedules.", schema=ScheduleSerializer),
             404: openapi.Response(description="User not found.")
         }
     )
     def get(self, request, user_pk, *args, **kwargs):
-
         user = get_object_or_404(CustomUser, pk=user_pk)
         group_memberships = GroupMembership.objects.filter(user=user)
         schedules = Schedule.objects.filter(group__in=[membership.group for membership in group_memberships]).distinct()
 
         serializer = ScheduleSerializer(schedules, many=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        user_data = {
+            "id": user.id,
+            "email": user.email,
+            "profile_image": user.profile_image.url,
+            "name": user.name,
+            "social_provider": user.social_provider,
+            "is_logged_in": user.is_logged_in
+        }
+
+        response_data = {
+            "user": user_data,
+            "schedules": serializer.data,
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 # 그룹

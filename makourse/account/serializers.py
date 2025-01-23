@@ -30,4 +30,4 @@ class GroupMembershipSerializer(serializers.ModelSerializer):
 class ScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Schedule
-        fields = ['id', 'course_name', 'meet_date_first', 'meet_place']
+        fields = ['id', 'group', 'course_name', 'meet_date_first', 'meet_place', 'latitude', 'longitude']
