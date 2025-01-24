@@ -119,16 +119,19 @@ SOCIAL_REDIRECT_URIS = { # 로컬, 백, 프론트 url 모두 설정
         'https://makourse.my/account/google/callback/', # 0 : 프론트 배포 도메인
         'http://localhost:5173/account/google/callback/', # 1 : 로컬 환경
         'https://api-makourse.kro.kr/account/google/callback/', # 2 : 백엔드 배포 도메인
+        'http://localhost:8000/account/google/callback/', # 3 : 백엔드 로컬 환경
     ],
     'naver': [
         'https://makourse.my/account/naver/callback/',
         'http://localhost:5173/account/naver/callback/',
         'https://api-makourse.kro.kr/account/naver/callback/',
+        'http://localhost:8000/account/naver/callback/',
     ],
     'kakao': [
         'https://makourse.my/account/kakao/callback/',
         'http://localhost:5173/account/kakao/callback/',
         'https://api-makourse.kro.kr/account/kakao/callback/',
+        'http://localhost:8000/account/kakao/callback/',
     ],
 }
 

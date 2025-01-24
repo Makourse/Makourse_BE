@@ -17,5 +17,8 @@ urlpatterns = [
     path('groups/<int:group_id>/join', GroupMembershipJoinView.as_view(), name='group-join'), # 그룹원 등록
     path('groups/<int:group_id>/members/<int:membership_id>', GroupMembershipDeleteView.as_view(), name='group-member-delete'), # 그룹원 삭제
 
+    # access token 재발급
+    path('token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
+
 
 ]

@@ -15,6 +15,7 @@ from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from urllib.parse import urlparse
+from rest_framework_simplejwt.views import TokenRefreshView
 
 # 1. Authorization code 받아오기(프론트가 소셜에서)
 # 2. Authorizaiton code를 가지고 서버가 소셜에게 Access Token 요청
@@ -60,13 +61,13 @@ class SocialLoginAPIView(APIView):
             return Response({'error': f'{provider} is not a supported provider'}, status=400)
 
 
-        # 적절한 리디렉션 URI 선택 (0: 프론트 배포 도메인, 1: 로컬, 2: 백엔드 배포 도메인)
+        # 적절한 리디렉션 URI 선택 (0: 프론트 배포 도메인, 1: 로컬, 2: 백엔드 배포 도메인, 3: 백엔드 로컬)
         address = request.data.get('address')
         redirect_uris = settings.SOCIAL_REDIRECT_URIS.get(provider, [])
         redirect_uri = redirect_uris[address]
 
-        #print("Redirect URI:", redirect_uri) # 코트 확인
-        
+        print("Redirect URI:", redirect_uri) # 코트 확인
+
         if not redirect_uri:
             return Response({'error': 'No valid redirect URI found'}, status=400)
 
@@ -484,3 +485,22 @@ class GroupMembershipDeleteView(APIView):
         membership.delete()
         return Response({"message": "User removed from group successfully."}, status=status.HTTP_204_NO_CONTENT)
 
+
+# refresh 통해 access token 재발급 
+class CustomTokenRefreshView(TokenRefreshView):
+    @swagger_auto_schema(
+        tags=['유저'],
+        operation_summary="access token 재발급",
+        operation_description="리프레시 토큰을 통해 액세스 토큰을 재발급합니다.",
+        responses={
+            200: openapi.Response("Access token 재발급", schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "access": openapi.Schema(type=openapi.TYPE_STRING),
+                },
+            )),
+            401: "유효하지 않은 리프레시 토큰",
+        },
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
