@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from course.models import Schedule
-from .models import UserGroup, GroupMembership
+from .models import UserGroup, GroupMembership, CustomUser
 
 
 class UserGroupSerializer(serializers.ModelSerializer):
@@ -16,12 +16,18 @@ class UserGroupSerializer(serializers.ModelSerializer):
         if schedule:
             return {
                 "id": schedule.id,
-                "schedule_name": schedule.course_name
+                "course_name": schedule.course_name
             }
         return None  # 일정이 없는 경우 None 반환
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'name', 'email']
+
 class GroupMembershipSerializer(serializers.ModelSerializer):
     role = serializers.CharField(source='get_role_display')  # 역할 이름을 읽기 전용 필드로 추가
+    user = UserSerializer() # 유저 중첩화(이름&이메일 같이 보여주기 위해)
 
     class Meta:
         model = GroupMembership
