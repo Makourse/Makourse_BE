@@ -121,8 +121,8 @@ class GroupMembership(models.Model):
         unique_together = ('user', 'group')  # 동일한 사용자가 같은 그룹에 중복 가입하지 않도록
 
     def __str__(self):
-        schedule_name = self.group.schedule.course_name if hasattr(self.group, 'schedule') and self.group.schedule else "No Schedule"
-        return f"{schedule_name}의 {self.user.name}({self.get_role_display()})"
+        course_name = self.group.schedule.course_name if hasattr(self.group, 'schedule') and self.group.schedule else "No Schedule"
+        return f"{course_name}의 {self.user.name}({self.get_role_display()})"
         
 # user와 group은 다대다 관계인듯
 # 한 user가 여러 그룹에 들어갈 수 있고, 한 group 안에도 여러 유저가 있을 수 있으니까
