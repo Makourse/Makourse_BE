@@ -306,8 +306,10 @@ class UserSchedulesView(APIView):
             404: openapi.Response(description="User not found.")
         }
     )
-    def get(self, request, user_pk, *args, **kwargs):
-        user = get_object_or_404(CustomUser, pk=user_pk)
+    def get(self, request, *args, **kwargs):
+        # 현재 로그인된 사용자 가져오기
+        user = request.user
+
         group_memberships = GroupMembership.objects.filter(user=user)
         schedules = Schedule.objects.filter(group__in=[membership.group for membership in group_memberships]).distinct()
 
