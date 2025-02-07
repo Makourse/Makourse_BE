@@ -127,3 +127,47 @@ class GroupMembership(models.Model):
 # user와 group은 다대다 관계인듯
 # 한 user가 여러 그룹에 들어갈 수 있고, 한 group 안에도 여러 유저가 있을 수 있으니까
 # 그래서 GroupMembership으로 이어주는걸로 짬
+
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('invite', '초대'),
+        ('message', '일반 메시지'),
+        ('system', '시스템'),
+    ]
+
+    sender = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_notifications')
+    receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
+    notification_type = models.CharField(max_length=10, choices=NOTIFICATION_TYPES, default='message')
+    group = models.ForeignKey(UserGroup, on_delete=models.CASCADE, null=True, blank=True)  # 그룹 관련 알림이면 설정
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)  # 읽음 여부
+    status = models.CharField(
+        max_length=10,
+        choices=[('pending', '대기 중'), ('accepted', '수락됨'), ('rejected', '거절됨')],
+        default='pending',
+        null=True,
+        blank=True  # 초대 요청만 필요
+    )
+
+    def __str__(self):
+        return f"{self.receiver.name}에게 '{self.content[:20]}' 알림"
+
+    def mark_as_read(self):
+        """알림을 읽음 처리"""
+        self.is_read = True
+        self.save()
+
+    def accept_invite(self):
+        """초대 요청 수락"""
+        if self.notification_type == 'invite' and self.group:
+            GroupMembership.objects.create(user=self.receiver, group=self.group, role='member')
+            self.status = 'accepted'
+            self.save()
+
+    def reject_invite(self):
+        """초대 요청 거절"""
+        if self.notification_type == 'invite':
+            self.status = 'rejected'
+            self.save()
