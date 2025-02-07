@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from course.models import Schedule
-from .models import UserGroup, GroupMembership, CustomUser
+from .models import UserGroup, GroupMembership, CustomUser,Notification
 
 
 class UserGroupSerializer(serializers.ModelSerializer):
@@ -37,3 +37,12 @@ class ScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Schedule
         fields = ['id', 'group', 'course_name', 'meet_date_first', 'meet_place', 'latitude', 'longitude']
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    sender_name = serializers.CharField(source="sender.name", read_only=True)
+    group_name = serializers.CharField(source="group.schedule.course_name", read_only=True, default="일정 없음")
+
+    class Meta:
+        model = Notification
+        fields = ["id", "sender", "sender_name", "receiver", "group", "group_name", "notification_type", "content", "created_at", "is_read", "status"]
