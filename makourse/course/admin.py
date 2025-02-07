@@ -16,3 +16,22 @@ admin.site.register(ScheduleEntry, ScheduleEntryAdmin)
 class AlternativePlaceAdmin(admin.ModelAdmin):
     list_display = ('pk', 'schedule_entry', 'name')
 admin.site.register(AlternativePlace)
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'receiver', 'sender', 'notification_type', 'group', 'content', 'created_at', 'is_read', 'status')
+    list_filter = ('notification_type', 'is_read', 'status', 'created_at')
+    search_fields = ('receiver__email', 'sender__email', 'content')
+    ordering = ('-created_at',)
+    fieldsets = (
+        ('알림 정보', {
+            'fields': ('receiver', 'sender', 'notification_type', 'group', 'content', 'is_read', 'status')
+        }),
+        ('추가 정보', {
+            'fields': ('created_at',),
+            'classes': ('collapse',),
+        }),
+    )
+
+    readonly_fields = ('created_at',)  # 생성된 날짜는 읽기 전용
