@@ -506,3 +506,128 @@ class CustomTokenRefreshView(TokenRefreshView):
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
+
+
+class GroupMembershipInviteView(APIView):
+    @swagger_auto_schema(
+        tags=['그룹'],
+        operation_summary="유저에게 그룹 초대 알림 보내기",
+        operation_description="그룹장이 특정 유저에게 초대 요청을 보냅니다.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'user_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='User ID to invite')
+            },
+            required=['user_id']
+        ),
+        responses={201: "Invitation sent", 400: "Error message"}
+    )
+    def post(self, request, group_id, *args, **kwargs):
+        # 그룹 가져오기
+        group = get_object_or_404(UserGroup, pk=group_id)
+        user_id = request.data.get('user_id')
+        sender_id = request.data.get('sender_id') # 지금 토큰 발급을 안 해서 이렇게 하고 개발하고 끝나면 request.user로 받을 예정
+
+    
+
+        if not user_id:
+            return Response({"error": "User ID가 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 초대 대상 사용자 가져오기
+        user = get_object_or_404(CustomUser, email=user_id)
+        sender = get_object_or_404(CustomUser, email=sender_id) # 지금 토큰 발급을 안 해서 이렇게 하고 개발하고 끝나면 request.user로 받을 예정
+
+        # 이미 그룹에 속해 있는지 확인
+        if GroupMembership.objects.filter(user=user, group=group).exists():
+            return Response({"error": "이미 유저가 그룹에 속해 있습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 기존 초대 요청이 있는지 확인
+        existing_invite = Notification.objects.filter(
+            receiver=user, group=group, notification_type='invite', status='pending'
+        )
+        if existing_invite.exists():
+            return Response({"error": "이미 해당 유저를 그룹에 초대했습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 그룹의 일정 가져오기 (없으면 기본값)
+        schedule = getattr(group, 'schedule', None)  # group.schedule이 없으면 None 반환
+        course_name = schedule.course_name if schedule and schedule.course_name else "일정 없음"
+
+        # 초대 알림 생성
+        Notification.objects.create(
+            sender=sender,  # 현재 요청을 보낸 유저
+            #sender = request.user
+            receiver=user,
+            notification_type='invite',
+            group=group,
+            content=f"{sender.name}님이 '{course_name}' 일정에 초대했습니다."
+        )
+
+        return Response({
+            "message": "Invitation sent successfully.",
+            "group": {
+                "id": group.id,
+                "code": group.code
+            },
+            "invited_user": {
+                "id": user.id,
+                "name": user.name
+            },
+            "course_name": course_name  # 초대된 일정 이름 추가
+        }, status=status.HTTP_201_CREATED)
+
+
+
+class GroupMembershipInviteResponseView(APIView):
+    @swagger_auto_schema(
+        tags=['그룹'],
+        operation_summary="초대 요청 수락/거절",
+        operation_description="초대받은 유저가 그룹 초대 요청을 수락하거나 거절합니다.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'status': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=['accepted', 'rejected'],
+                    description='Invitation response (accepted/rejected)'
+                )
+            },
+            required=['status']
+        ),
+        responses={200: "Response recorded", 400: "Error message"}
+    )
+    def post(self, request, group_id, *args, **kwargs):
+        # 그룹 가져오기
+        group = get_object_or_404(UserGroup, pk=group_id)
+
+        # 현재 로그인된 사용자 가져오기 (초대받은 사람)
+        # user = request.user 로 바꿀 예정정
+        user_id = request.data.get("user_id")
+        user = get_object_or_404(CustomUser,email=user_id)
+
+        # 초대 알림 찾기 (대기 상태인 초대만)
+        invite_notification = Notification.objects.filter(
+            receiver=user,
+            group=group,
+            notification_type='invite',
+            status='pending'
+        ).first()
+
+        if not invite_notification:
+            return Response({"error": "보낸 알림이 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 요청에서 응답 상태 가져오기
+        status_response = request.data.get('status')
+
+        if status_response == 'accepted':
+            # 그룹에 사용자 추가
+            GroupMembership.objects.create(user=user, group=group, role='member')
+            invite_notification.status = 'accepted'
+            invite_notification.save()
+            return Response({"message": "그룹에 가입했습니다."}, status=status.HTTP_200_OK)
+
+        elif status_response == 'rejected':
+            invite_notification.status = 'rejected'
+            invite_notification.save()
+            return Response({"message": "그룹에 가입을 거절했습니다."}, status=status.HTTP_200_OK)
+
+        return Response({"error": "Invalid status. Use 'accepted' or 'rejected'."}, status=status.HTTP_400_BAD_REQUEST)
