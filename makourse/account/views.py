@@ -631,3 +631,27 @@ class GroupMembershipInviteResponseView(APIView):
             return Response({"message": "그룹에 가입을 거절했습니다."}, status=status.HTTP_200_OK)
 
         return Response({"error": "Invalid status. Use 'accepted' or 'rejected'."}, status=status.HTTP_400_BAD_REQUEST)
+
+class NotificationListView(APIView):
+    # permission_classes = [IsAuthenticated]  # 로그인한 사용자만 접근 가능
+
+    def get(self, request, *args, **kwargs):
+        # user = request.user  # 현재 로그인한 유저
+
+        user_id = request.data.get("user_id")
+        user = get_object_or_404(CustomUser,email = user_id)
+
+
+        is_unread = request.query_params.get("unread", None)  # 읽지 않은 알림 필터
+
+        # 기본적으로 해당 유저의 모든 알림 조회 (최신순)
+        notifications = Notification.objects.filter(receiver=user).order_by("-created_at")
+
+        # 만약 "unread=true"가 요청에 포함되면 읽지 않은 알림만 반환
+        if is_unread and is_unread.lower() == "true":
+            notifications = notifications.filter(is_read=False)
+
+        # 시리얼라이저를 이용해 데이터 변환
+        serializer = NotificationSerializer(notifications, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
