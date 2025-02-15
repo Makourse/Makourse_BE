@@ -100,7 +100,7 @@ REST_USE_JWT = True
 
 SIMPLE_JWT = {
     'SIGNING_KEY': 'hellomakourse',
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
