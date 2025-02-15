@@ -21,6 +21,7 @@ class Schedule(models.Model): # 일정(코스)
     meet_date_third = models.DateTimeField(null=True , blank= True)
     course_name = models.CharField(max_length=20, null=True, blank= True)
     meet_place = models.CharField(max_length=50, null=True, blank= True)
+    address = models.CharField(null=True, blank = True, max_length=150)
     latitude = models.FloatField(default=0.0)  # 만나는 장소의 위도
     longitude = models.FloatField(default=0.0)  # 만나는 장소의 경도
     created_at = models.DateField(auto_now_add=True)
