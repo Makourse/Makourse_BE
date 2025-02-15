@@ -23,16 +23,13 @@ class MyPlaceView(APIView):
             400: openapi.Response('Validation error'),
         }
     )
-    def post(self, request, pk, *args, **kwargs):
-        request.data['user'] = pk
-        # request.user.id
-        # 일단 url로 user pk 받기
-        serializer = CreateMyPlaceSerializer(data=request.data)
+    def post(self, request, *args, **kwargs):
+        serializer = CreateMyPlaceSerializer(data=request.data, context={'request': request})
 
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+            serializer.save(user=request.user)  
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
     # 나만의 장소 목록 조회
@@ -41,10 +38,10 @@ class MyPlaceView(APIView):
         operation_summary="나만의 장소 목록 조회",
         responses={200: ListMyPlaceSerializer(many=True)}
     )
-    def get(self, request, pk, *args, **kwargs):
-        my_places = MyPlace.objects.filter(user=pk)
+    def get(self, request, *args, **kwargs):
+        my_places = MyPlace.objects.filter(user=request.user)  
         serializer = ListMyPlaceSerializer(my_places, many=True)
-        return Response(serializer.data, status=200)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
  
 
@@ -59,10 +56,9 @@ class MyPlaceDetailView(APIView):
         responses={204: openapi.Response("Place deleted successfully")},
     )
     def delete(self, request, myplace_id, *args, **kwargs):
-        my_place = get_object_or_404(MyPlace, pk=myplace_id) # user=request.user 넣기
+        my_place = get_object_or_404(MyPlace, pk=myplace_id, user=request.user)  
         my_place.delete()
-
-        return Response({"message":"My place deleted"}, status=204)
+        return Response({"message": "My place deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
     # 나만의 장소 수정
@@ -76,13 +72,13 @@ class MyPlaceDetailView(APIView):
         },
     )
     def patch(self, request, myplace_id, *args, **kwargs):
-        my_place = get_object_or_404(MyPlace, pk=myplace_id) # user=request.user 넣기
-        serializer = CreateMyPlaceSerializer(my_place, data=request.data, partial=True)
+        my_place = get_object_or_404(MyPlace, pk=myplace_id, user=request.user)  
+        serializer = CreateMyPlaceSerializer(my_place, data=request.data, partial=True, context={'request': request})
 
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
 # 스케줄 속 각 일정
