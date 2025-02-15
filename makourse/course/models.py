@@ -32,7 +32,7 @@ class Schedule(models.Model): # 일정(코스)
 class ScheduleEntry(models.Model):  # 각 코스의 일정들
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)  # 코스의 외래키
     num = models.IntegerField(null=True, blank=True)  # 순번
-    entry_name = models.CharField(max_length=30)  # 일정의 이름
+    entry_name = models.CharField(max_length=30, null=True, blank=True)  # 일정의 이름
     time = models.TimeField(null=True, blank=True)  # 그 일정의 시간
     open_time = models.TimeField(null=True, blank=True)  # 오픈 시간
     close_time = models.TimeField(null=True, blank=True)  # 마감 시간
@@ -54,7 +54,7 @@ class ScheduleEntry(models.Model):  # 각 코스의 일정들
             
 
     def __str__(self):
-        return self.entry_name
+        return self.entry_name if self.entry_name else f"ScheduleEntry {self.pk}"  # ✅ 항상 문자열 반환
 
 class AlternativePlace(models.Model): # 대안장소
     schedule_entry = models.ForeignKey(ScheduleEntry, on_delete=models.CASCADE)

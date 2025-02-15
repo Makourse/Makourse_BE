@@ -10,8 +10,18 @@ class ScheduleAdmin(admin.ModelAdmin):
 admin.site.register(Schedule, ScheduleAdmin)
 
 class ScheduleEntryAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'schedule', 'num', 'entry_name')
+    list_display = ('pk', 'get_schedule', 'num', 'get_entry_name')  
+
+    def get_schedule(self, obj):
+        return obj.schedule if obj.schedule else "N/A" 
+    get_schedule.short_description = "Schedule"
+
+    def get_entry_name(self, obj):
+        return obj.entry_name if obj.entry_name else "N/A"  
+    get_entry_name.short_description = "Entry Name"
+
 admin.site.register(ScheduleEntry, ScheduleEntryAdmin)
+
 
 class AlternativePlaceAdmin(admin.ModelAdmin):
     list_display = ('pk', 'schedule_entry', 'name')
