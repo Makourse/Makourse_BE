@@ -269,12 +269,12 @@ class ScheduleUpdateView(APIView):
     @swagger_auto_schema(
         tags=["일정(코스)"],
         operation_summary="일정(코스) 생성",
-        request_body=CreateCourseSerializser,
-        responses={201: CreateCourseSerializser, 400: "Validation Error"}
+        request_body=CreateCourseSerializer,
+        responses={201: CreateCourseSerializer, 400: "Validation Error"}
     )
     def post(self, request, *args, **kwargs):
     
-        serializer = CreateCourseSerializser(data=request.data, context={'request': request})
+        serializer = CreateCourseSerializer(data=request.data, context={'request': request})
 
         if serializer.is_valid():
             serializer.save()
@@ -290,12 +290,12 @@ class ScheduleDetailView(APIView):
     @swagger_auto_schema(
         tags=["일정(코스)"],
         operation_summary="일정 수정",
-        request_body=CreateCourseSerializser,
-        responses={200: CreateCourseSerializser, 400: "Validation Error"}
+        request_body=CreateCourseSerializer,
+        responses={200: CreateCourseSerializer, 400: "Validation Error"}
     )
     def patch(self, request, schedule_id, *args, **kwargs):
         schedule = get_object_or_404(Schedule, pk=schedule_id)
-        serializer = CreateCourseSerializser(schedule, data=request.data, partial=True, context={'request': request})
+        serializer = CreateCourseSerializer(schedule, data=request.data, partial=True, context={'request': request})
 
         if serializer.is_valid():
             serializer.save()
@@ -313,7 +313,7 @@ class ScheduleDetailView(APIView):
     def get(self, request, schedule_id, *args, **kwargs):
         # 특정일정 상세조회
         schedule = get_object_or_404(Schedule, pk=schedule_id)
-        serializer = CreateCourseSerializser(schedule)
+        serializer = CreateCourseSerializer(schedule)
 
         schedule_entry = ScheduleEntry.objects.filter(schedule=schedule_id)
         entry_serializer = ScheduleEntrySerializer(schedule_entry, many=True)

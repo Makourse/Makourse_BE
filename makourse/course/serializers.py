@@ -26,21 +26,18 @@ class ScheduleEntryDetailSerializer(serializers.ModelSerializer):
         model = ScheduleEntry
         fields = '__all__'
 
-class CreateCourseSerializser(serializers.ModelSerializer):
-    user_id = serializers.CharField(write_only=True)  # 요청에서 유저 ID (id 필드) 처리
 
+class CreateCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Schedule
-        fields = '__all__'
-        # [
-        #     'meet_date_first', 'meet_date_second', 'meet_date_third',
-        #     'course_name', 'meet_place', 'latitude', 'longitude', 'user_id'
-        # ]
+        fields = '__all__'  # 모든 필드 포함
 
     def create(self, validated_data):
-        # user_id로 User 객체 가져오기
-        user_id = validated_data.pop('user_id')  # 요청 데이터에서 user_id 추출
-        user = get_object_or_404(CustomUser, id=user_id)  # User 모델의 id 필드로 조회
+        request = self.context.get('request')
+        if not request or not request.user:
+            raise serializers.ValidationError("유효한 사용자 정보를 찾을 수 없습니다.")
+
+        user = request.user  # request.user 사용
 
         # 일정 생성
         schedule = Schedule.objects.create(**validated_data)
