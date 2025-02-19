@@ -216,7 +216,7 @@ class LogoutAPIView(APIView):
             return Response({'error': str(e)}, status=400)
 
 
-class ProfileImageUpdateAPIView(APIView):
+class ProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     # 프로필 이미지 업로드 및 수정
@@ -265,6 +265,36 @@ class ProfileImageUpdateAPIView(APIView):
 
     @swagger_auto_schema(
         tags=['유저'],
+        operation_summary="기본 프로필로 reset",
+        responses={
+            200: openapi.Response(description="Profile image reset to default.", schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'message': openapi.Schema(type=openapi.TYPE_STRING, description='Success message'),
+                    'profile_image': openapi.Schema(type=openapi.TYPE_STRING, description='URL of the default profile image')
+                }
+            )),
+            400: openapi.Response(description="Error message if something goes wrong.")
+        }
+    )
+    def patch(self, request): # 기본이미지로 설정할 때 PATCH method 사용
+        user = request.user
+
+        # 현재 프로필 이미지가 default가 아닌 경우 삭제
+        if user.profile_image.name != 'user_photo/default.png':  # 현재 프로필이 기본 이미지가 아닌 경우
+            profile_image_path = os.path.join(settings.MEDIA_ROOT, user.profile_image.name)
+            if os.path.exists(profile_image_path):
+                os.remove(profile_image_path)  # 파일 삭제
+
+        # 프로필 이미지를 기본 이미지로 설정
+        user.profile_image = 'user_photo/default.png'
+        user.save()
+
+        return Response({'message': 'Profile image reset to default', 'profile_image': user.profile_image.url})
+
+
+    @swagger_auto_schema(
+        tags=['유저'],
         operation_summary="현재 로그인된 사용자 정보 조회",
         responses={
             200: openapi.Response(description="성공적으로 사용자 정보를 반환합니다.", schema=openapi.Schema(
@@ -297,41 +327,6 @@ class ProfileImageUpdateAPIView(APIView):
         return Response(user_data, status=status.HTTP_200_OK)
 
         
-
-
-# 프로필 사진 기본 이미지로
-class ResetProfileImageAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(
-        tags=['유저'],
-        operation_summary="기본 프로필로 reset",
-        responses={
-            200: openapi.Response(description="Profile image reset to default.", schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'message': openapi.Schema(type=openapi.TYPE_STRING, description='Success message'),
-                    'profile_image': openapi.Schema(type=openapi.TYPE_STRING, description='URL of the default profile image')
-                }
-            )),
-            400: openapi.Response(description="Error message if something goes wrong.")
-        }
-    )
-    def post(self, request):
-        user = request.user
-
-        # 현재 프로필 이미지가 default가 아닌 경우 삭제
-        if user.profile_image.name != 'user_photo/default.png':  # 현재 프로필이 기본 이미지가 아닌 경우
-            profile_image_path = os.path.join(settings.MEDIA_ROOT, user.profile_image.name)
-            if os.path.exists(profile_image_path):
-                os.remove(profile_image_path)  # 파일 삭제
-
-        # 프로필 이미지를 기본 이미지로 설정
-        user.profile_image = 'user_photo/default.png'
-        user.save()
-
-        return Response({'message': 'Profile image reset to default', 'profile_image': user.profile_image.url})
-        # 일정 기준
 
 class UserSchedulesView(APIView):
     @swagger_auto_schema(
