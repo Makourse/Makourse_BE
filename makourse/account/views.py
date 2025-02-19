@@ -216,7 +216,7 @@ class LogoutAPIView(APIView):
             return Response({'error': str(e)}, status=400)
 
 
-class ProfileImageUpdateAPIView(APIView):
+class ProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     # 프로필 이미지 업로드 및 수정
@@ -263,10 +263,6 @@ class ProfileImageUpdateAPIView(APIView):
         return Response({'message': 'Profile image updated successfully', 'profile_image': user.profile_image.url})
 
 
-# 프로필 사진 기본 이미지로
-class ResetProfileImageAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
     @swagger_auto_schema(
         tags=['유저'],
         operation_summary="기본 프로필로 reset",
@@ -281,7 +277,7 @@ class ResetProfileImageAPIView(APIView):
             400: openapi.Response(description="Error message if something goes wrong.")
         }
     )
-    def post(self, request):
+    def patch(self, request): # 기본이미지로 설정할 때 PATCH method 사용
         user = request.user
 
         # 현재 프로필 이미지가 default가 아닌 경우 삭제
@@ -295,7 +291,42 @@ class ResetProfileImageAPIView(APIView):
         user.save()
 
         return Response({'message': 'Profile image reset to default', 'profile_image': user.profile_image.url})
-        # 일정 기준
+
+
+    @swagger_auto_schema(
+        tags=['유저'],
+        operation_summary="현재 로그인된 사용자 정보 조회",
+        responses={
+            200: openapi.Response(description="성공적으로 사용자 정보를 반환합니다.", schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "id": openapi.Schema(type=openapi.TYPE_INTEGER, description="사용자 ID"),
+                    "email": openapi.Schema(type=openapi.TYPE_STRING, format="email", description="사용자 이메일"),
+                    "profile_image": openapi.Schema(type=openapi.TYPE_STRING, format="uri", description="프로필 이미지 URL"),
+                    "name": openapi.Schema(type=openapi.TYPE_STRING, description="사용자 이름"),
+                    "social_provider": openapi.Schema(type=openapi.TYPE_STRING, description="소셜 로그인 제공자"),
+                    "is_logged_in": openapi.Schema(type=openapi.TYPE_BOOLEAN, description="로그인 여부")
+                }
+            )),
+            401: openapi.Response(description="인증되지 않은 사용자")
+        }
+    )
+    def get(self, request):
+        # 현재 로그인된 사용자 가져오기
+        user = request.user
+
+        user_data = {
+            "id": user.id,
+            "email": user.email,
+            "profile_image": user.profile_image.url,
+            "name": user.name,
+            "social_provider": user.social_provider,
+            "is_logged_in": user.is_logged_in
+        }
+
+        return Response(user_data, status=status.HTTP_200_OK)
+
+        
 
 class UserSchedulesView(APIView):
     @swagger_auto_schema(
