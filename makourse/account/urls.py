@@ -8,6 +8,7 @@ urlpatterns = [
     path('logout/', LogoutAPIView.as_view(), name='logout'), # 로그아웃
     path('profile-image/update', ProfileImageUpdateAPIView.as_view(), name='profile-image-update'), # 프로필 사진 업로드
     path('profile-image/reset', ResetProfileImageAPIView.as_view(), name='profile-image-reset'), # 프로필 기본 이미지로 변경
+    path('profile', ProfileImageUpdateAPIView.as_view(), name='profile'), # 유저정보(프로필 사진 포함)
 
     # 유저에 따른 schedule 정보 보기
     path('schedules', UserSchedulesView.as_view(), name='user-schedules'),
