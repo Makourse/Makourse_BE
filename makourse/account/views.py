@@ -222,49 +222,6 @@ class ProfileAPIView(APIView):
     # 프로필 이미지 업로드 및 수정
     @swagger_auto_schema(
         tags=['유저'],
-        operation_summary="프로필 사진 업로드",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'profile_image': openapi.Schema(type=openapi.TYPE_FILE, description='The new profile image file.')
-            },
-            required=['profile_image']
-        ),
-        responses={
-            200: openapi.Response(description="Profile image updated successfully.", schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'message': openapi.Schema(type=openapi.TYPE_STRING, description='Success message'),
-                    'profile_image': openapi.Schema(type=openapi.TYPE_STRING, description='URL of the updated profile image')
-                }
-            )),
-            400: openapi.Response(description="Error message (e.g., no image file provided).")
-        }
-    )
-    def post(self, request):
-        # 현재 로그인된 사용자 가져오기
-        user = request.user
-
-        # 업로드된 파일 가져오기
-        profile_image = request.FILES.get('profile_image')
-        if not profile_image:
-            return Response({'error': 'No image file provided'}, status=400)
-        
-        # 현재 프로필 이미지가 default가 아닌 경우 삭제
-        if user.profile_image.name != 'user_photo/default.png':
-            profile_image_path = os.path.join(settings.MEDIA_ROOT, user.profile_image.name)
-            if os.path.exists(profile_image_path):
-                os.remove(profile_image_path)  # 파일 삭제
-
-        # 사용자 프로필 이미지 업데이트
-        user.profile_image = profile_image
-        user.save()
-
-        return Response({'message': 'Profile image updated successfully', 'profile_image': user.profile_image.url})
-
-
-    @swagger_auto_schema(
-        tags=['유저'],
         operation_summary="기본 프로필로 reset",
         responses={
             200: openapi.Response(description="Profile image reset to default.", schema=openapi.Schema(
@@ -277,7 +234,7 @@ class ProfileAPIView(APIView):
             400: openapi.Response(description="Error message if something goes wrong.")
         }
     )
-    def patch(self, request): # 기본이미지로 설정할 때 PATCH method 사용
+    def post(self, request): # 기본이미지로 설정할 때 POST method 사용
         user = request.user
 
         # 현재 프로필 이미지가 default가 아닌 경우 삭제
@@ -291,6 +248,86 @@ class ProfileAPIView(APIView):
         user.save()
 
         return Response({'message': 'Profile image reset to default', 'profile_image': user.profile_image.url})
+
+
+    @swagger_auto_schema(
+        tags=['유저'],
+        operation_summary="유저 정보 변경",
+        consumes=['multipart/form-data'],  # 파일 업로드 시 꼭 추가
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'profile_image': openapi.Schema(
+                    type=openapi.TYPE_FILE,
+                    description='새 프로필 이미지 파일'
+                ),
+                'name': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='새 유저 이름'
+                ),
+            },
+        ),
+        responses={
+            200: openapi.Response(
+                description="프로필 수정 성공",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'message': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description='성공 메시지'
+                        ),
+                        'user': openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                "id": openapi.Schema(type=openapi.TYPE_INTEGER, description="사용자 ID"),
+                                "email": openapi.Schema(type=openapi.TYPE_STRING, format="email", description="사용자 이메일"),
+                                "profile_image": openapi.Schema(type=openapi.TYPE_STRING, format="uri", description="프로필 이미지 URL"),
+                                "name": openapi.Schema(type=openapi.TYPE_STRING, description="사용자 이름"),
+                                "social_provider": openapi.Schema(type=openapi.TYPE_STRING, description="소셜 로그인 제공자"),
+                                "is_logged_in": openapi.Schema(type=openapi.TYPE_BOOLEAN, description="로그인 여부")
+                            }
+                        ),
+                    }
+                )
+            ),
+            400: openapi.Response(description="에러 메시지(예: 파일이 제공되지 않음).")
+        }
+    )
+    def patch(self, request): # 유저 정보 변경
+        # 현재 로그인된 사용자 가져오기
+        user = request.user
+
+        # 업로드된 파일 가져오기
+        profile_image = request.FILES.get('profile_image')
+        # 이름 변경
+        user_name = request.data.get('name')
+
+        if profile_image:
+            # 현재 프로필 이미지가 default가 아닌 경우 삭제
+            if user.profile_image.name != 'user_photo/default.png':
+                profile_image_path = os.path.join(settings.MEDIA_ROOT, user.profile_image.name)
+                if os.path.exists(profile_image_path):
+                    os.remove(profile_image_path)  # 파일 삭제
+
+            # 사용자 프로필 이미지 업데이트
+            user.profile_image = profile_image
+            user.save()
+
+        if user_name:
+            user.name = user_name
+            user.save()
+
+        user_data = {
+            "id": user.id,
+            "email": user.email,
+            "profile_image": user.profile_image.url,
+            "name": user.name,
+            "social_provider": user.social_provider,
+            "is_logged_in": user.is_logged_in
+        }
+
+        return Response({'message': 'Profile updated successfully', 'user': user_data})
 
 
     @swagger_auto_schema(
