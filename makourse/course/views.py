@@ -15,8 +15,8 @@ class MyPlaceView(APIView):
 
     # 나만의 장소 추가
     @swagger_auto_schema( 
-        tags=["나만의 장소"],
-        operation_summary="나만의 장소 추가",
+        tags=["500 나만의 장소"],
+        operation_summary="501 나만의 장소 추가",
         request_body = CreateMyPlaceSerializer,
         responses={
             201: openapi.Response('Place created successfully', CreateMyPlaceSerializer),
@@ -34,8 +34,8 @@ class MyPlaceView(APIView):
 
     # 나만의 장소 목록 조회
     @swagger_auto_schema( 
-        tags=["나만의 장소"],
-        operation_summary="나만의 장소 목록 조회",
+        tags=["500 나만의 장소"],
+        operation_summary="503 나만의 장소 목록 조회",
         responses={200: ListMyPlaceSerializer(many=True)}
     )
     def get(self, request, *args, **kwargs):
@@ -51,8 +51,8 @@ class MyPlaceDetailView(APIView):
 
     # 나만의 장소 삭제
     @swagger_auto_schema(
-        tags=["나만의 장소"],
-        operation_summary="나만의 장소 삭제",
+        tags=["500 나만의 장소"],
+        operation_summary="502 나만의 장소 삭제",
         responses={204: openapi.Response("Place deleted successfully")},
     )
     def delete(self, request, myplace_id, *args, **kwargs):
@@ -63,8 +63,8 @@ class MyPlaceDetailView(APIView):
 
     # 나만의 장소 수정
     @swagger_auto_schema(
-        tags=["나만의 장소"],
-        operation_summary="나만의 장소 수정",
+        tags=["500 나만의 장소"],
+        operation_summary="504 나만의 장소 수정",
         request_body=CreateMyPlaceSerializer,
         responses={
             201: openapi.Response("Place updated successfully", CreateMyPlaceSerializer),
@@ -86,8 +86,8 @@ class ScheduleEntryView(APIView):
     # permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        tags=["스케줄 속 각 일정"],
-        operation_summary="스케줄 속 각 일정 추가하기",
+        tags=["300 스케줄 속 각 일정"],
+        operation_summary="301 스케줄 속 각 일정 추가하기",
         request_body=ScheduleEntryDetailSerializer,
         responses={201: ScheduleEntryDetailSerializer, 400: "Validation Error"}
     )
@@ -109,8 +109,8 @@ class ScheduleEntryDetailView(APIView):
     # permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        tags=["스케줄 속 각 일정"],
-        operation_summary="각 일정 조회",
+        tags=["300 스케줄 속 각 일정"],
+        operation_summary="304 각 일정 조회",
         responses={200: ScheduleEntryDetailSerializer, 404: "Not Found"}
     )
     def get(self, request, pk, *args, **kwargs):
@@ -123,8 +123,8 @@ class ScheduleEntryDetailView(APIView):
 
 
     @swagger_auto_schema(
-        tags=["스케줄 속 각 일정"],
-        operation_summary="스케줄 속 각 일정 수정하기",
+        tags=["300 스케줄 속 각 일정"],
+        operation_summary="302 스케줄 속 각 일정 수정하기",
         request_body=ScheduleEntryDetailSerializer,
         responses={200: ScheduleEntryDetailSerializer, 400: "Validation Error"}
     )
@@ -141,8 +141,8 @@ class ScheduleEntryDetailView(APIView):
 
 
     @swagger_auto_schema(
-        tags=["스케줄 속 각 일정"],
-        operation_summary="스케줄 속 각 일정 삭제하기",
+        tags=["300 스케줄 속 각 일정"],
+        operation_summary="303 스케줄 속 각 일정 삭제하기",
         responses={204: "ScheduleEntry deleted successfully."}
     )
     def delete(self, request, pk, *args, **kwargs):
@@ -158,8 +158,8 @@ class AlternativePlaceView(APIView):
     # permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        tags=["대안장소"],
-        operation_summary="대안장소 추가하기",
+        tags=["300 대안장소"],
+        operation_summary="305 대안장소 추가하기",
         request_body=AlternativePlaceSerializer,
         responses={201: AlternativePlaceSerializer, 400: "Validation Error"}
     )
@@ -180,8 +180,8 @@ class AlternativePlaceView(APIView):
     
 
     @swagger_auto_schema(
-        tags=["대안장소"],
-        operation_summary="대안장소 조회하기",
+        tags=["300 대안장소"],
+        operation_summary="306 대안장소 조회하기",
         responses={200: AlternativePlaceSerializer(many=True)}
     )
     def get(self, request, schedule_entry_id, *args, **kwargs):
@@ -199,8 +199,8 @@ class AlternativePlaceDetailView(APIView):
     # permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        tags=["대안장소"],
-        operation_summary="대안장소 삭제하기",
+        tags=["300 대안장소"],
+        operation_summary="308 대안장소 삭제하기",
         responses={204: "Deleted Successfully"}
     )
     def delete(self, request, pk, *args, **kwargs):
@@ -212,8 +212,8 @@ class AlternativePlaceDetailView(APIView):
 
 
     @swagger_auto_schema(
-        tags=["대안장소"],
-        operation_summary="대안장소 수정하기",
+        tags=["300 대안장소"],
+        operation_summary="307 대안장소 수정하기",
         responses={200: AlternativePlaceSerializer, 400: "Validation Error"}
 
     )
@@ -233,8 +233,8 @@ class ReplaceWithAlternativePlaceView(APIView):
     # permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        tags=["대안장소"],
-        operation_summary="일정을 대안장소로 대체",
+        tags=["300 대안장소"],
+        operation_summary="309 일정을 대안장소로 대체",
         responses={200: ScheduleEntryDetailSerializer, 400: "Validation Error"}
     )
     def put(self, request, alternative_place_id, *args, **kwargs):
@@ -267,8 +267,8 @@ class ScheduleUpdateView(APIView):
 
     # 일정 등록
     @swagger_auto_schema(
-        tags=["일정(코스)"],
-        operation_summary="일정(코스) 생성",
+        tags=["200 일정(코스)"],
+        operation_summary="201 일정(코스) 생성",
         request_body=CreateCourseSerializer,
         responses={201: CreateCourseSerializer, 400: "Validation Error"}
     )
@@ -288,8 +288,8 @@ class ScheduleDetailView(APIView):
 
     # 일정 수정
     @swagger_auto_schema(
-        tags=["일정(코스)"],
-        operation_summary="일정 수정",
+        tags=["200 일정(코스)"],
+        operation_summary="204 일정 수정",
         request_body=CreateCourseSerializer,
         responses={200: CreateCourseSerializer, 400: "Validation Error"}
     )
@@ -305,8 +305,8 @@ class ScheduleDetailView(APIView):
 
     # 일정 조회
     @swagger_auto_schema(
-        tags=["일정(코스)"],
-        operation_summary="일정 상세 조회",
+        tags=["200 일정(코스)"],
+        operation_summary="202 일정 상세 조회",
         operation_description="url에 일정 pk를 넣으면 해당 일정 상세가 조회됩니다.",
         responses={200: "Schedule List or Detail"}
     )
@@ -327,8 +327,8 @@ class ScheduleDetailView(APIView):
 
     # 일정 삭제
     @swagger_auto_schema(
-        tags=["일정(코스)"],
-        operation_summary="일정 삭제",
+        tags=["200 일정(코스)"],
+        operation_summary="203 일정 삭제",
         responses={204: "Deleted Successfully"}
     )
     def delete(self, request, schedule_id, *args, **kwargs):

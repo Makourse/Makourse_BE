@@ -38,8 +38,8 @@ class SocialLoginAPIView(APIView):
 
 
     @swagger_auto_schema(
-        tags=['유저'],
-        operation_summary="소셜 로그인",
+        tags=['100 유저'],
+        operation_summary="101 소셜 로그인",
         operation_description="Authorization code를 통해 로그인하고 JWT token을 반환합니다.",
         responses={200: "JWT Token with user info", 400: "Error message"},
         request_body=openapi.Schema(
@@ -176,8 +176,8 @@ class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        tags=['유저'],
-        operation_summary="로그아웃",
+        tags=['100 유저'],
+        operation_summary="102 로그아웃",
         operation_description="로그아웃하면 유저의 `is_logged_in`는 false가 됩니다.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
@@ -221,8 +221,8 @@ class ProfileAPIView(APIView):
 
     # 프로필 이미지 업로드 및 수정
     @swagger_auto_schema(
-        tags=['유저'],
-        operation_summary="기본 프로필로 reset",
+        tags=['100 유저'],
+        operation_summary="104 기본 프로필로 reset",
         responses={
             200: openapi.Response(description="Profile image reset to default.", schema=openapi.Schema(
                 type=openapi.TYPE_OBJECT,
@@ -251,8 +251,8 @@ class ProfileAPIView(APIView):
 
 
     @swagger_auto_schema(
-        tags=['유저'],
-        operation_summary="유저 정보 변경",
+        tags=['100 유저'],
+        operation_summary="103 유저 정보 변경",
         consumes=['multipart/form-data'],  # 파일 업로드 시 꼭 추가
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
@@ -331,8 +331,8 @@ class ProfileAPIView(APIView):
 
 
     @swagger_auto_schema(
-        tags=['유저'],
-        operation_summary="현재 로그인된 사용자 정보 조회",
+        tags=['100 유저'],
+        operation_summary="106 현재 로그인된 사용자 정보 조회",
         responses={
             200: openapi.Response(description="성공적으로 사용자 정보를 반환합니다.", schema=openapi.Schema(
                 type=openapi.TYPE_OBJECT,
@@ -367,8 +367,8 @@ class ProfileAPIView(APIView):
 
 class UserSchedulesView(APIView):
     @swagger_auto_schema(
-        tags=['일정(코스)'],
-        operation_summary="해당 유저의 정보 및 일정 목록 조회",
+        tags=['200 일정(코스)'],
+        operation_summary="205 해당 유저의 정보 및 일정 목록 조회",
         responses={
             200: openapi.Response(description="List of user schedules.", schema=ScheduleSerializer),
             404: openapi.Response(description="User not found.")
@@ -404,8 +404,8 @@ class UserGroupView(APIView):
     #permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        tags=['그룹'],
-        operation_summary="그룹 생성",
+        tags=['400 그룹'],
+        operation_summary="404 그룹 생성",
         operation_description="유저가 일정을 생성하면 자동적으로 그룹이 생성됩니다.",
         request_body=UserGroupSerializer,
         responses={201: UserGroupSerializer, 400: "Validation Error"}
@@ -449,8 +449,8 @@ class UserGroupView(APIView):
 
 
     @swagger_auto_schema(
-        tags=['그룹'],
-        operation_summary="그룹 조회",
+        tags=['400 그룹'],
+        operation_summary="402 그룹 조회",
         operation_description="해당 일정의 그룹 멤버들을 조회합니다..",
         responses={200: "User Group and Members Info", 404: "Group not found"}
     )
@@ -479,8 +479,8 @@ class UserGroupView(APIView):
 
 class GroupMembershipJoinView(APIView):
     @swagger_auto_schema(
-        tags=['그룹'],
-        operation_summary="초대된 유저 그룹에 추가",
+        tags=['400 그룹'],
+        operation_summary="401 초대된 유저 그룹에 추가",
         operation_description="특정 일정에 초대된 그룹 코드로 유저를 그룹에 추가합니다",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
@@ -536,8 +536,8 @@ class GroupMembershipJoinView(APIView):
 
 class GroupMembershipDeleteView(APIView):
     @swagger_auto_schema(
-        tags=['그룹'],
-        operation_summary="유저 그룹에서 내보내기",
+        tags=['400 그룹'],
+        operation_summary="403 유저 그룹에서 내보내기",
         operation_description="그룹의 리더가 멤버를 내보냅니다.",
         responses={204: "User removed from group", 400: "Error message"}
     )
@@ -559,8 +559,8 @@ class GroupMembershipDeleteView(APIView):
 # refresh 통해 access token 재발급 
 class CustomTokenRefreshView(TokenRefreshView):
     @swagger_auto_schema(
-        tags=['유저'],
-        operation_summary="access token 재발급",
+        tags=['100 유저'],
+        operation_summary="105 access token 재발급",
         operation_description="리프레시 토큰을 통해 액세스 토큰을 재발급합니다.",
         responses={
             200: openapi.Response("Access token 재발급", schema=openapi.Schema(
@@ -578,8 +578,8 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 class GroupMembershipInviteView(APIView):
     @swagger_auto_schema(
-        tags=['그룹'],
-        operation_summary="유저에게 그룹 초대 알림 보내기",
+        tags=['600 알림'],
+        operation_summary="601 유저에게 그룹 초대 알림 보내기",
         operation_description="그룹장이 특정 유저에게 초대 요청을 보냅니다.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
@@ -647,8 +647,8 @@ class GroupMembershipInviteView(APIView):
 
 class GroupMembershipInviteResponseView(APIView):
     @swagger_auto_schema(
-        tags=['그룹'],
-        operation_summary="초대 요청 수락/거절",
+        tags=['600 알림'],
+        operation_summary="602 초대 요청 수락/거절",
         operation_description="초대받은 유저가 그룹 초대 요청을 수락하거나 거절합니다.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
@@ -703,6 +703,31 @@ class GroupMembershipInviteResponseView(APIView):
 class NotificationListView(APIView):
     # permission_classes = [IsAuthenticated]  # 로그인한 사용자만 접근 가능
 
+    @swagger_auto_schema(
+        tags=['600 알림'],
+        operation_summary="603 유저의 알림 목록 조회",
+        operation_description="특정 유저의 모든 알림을 조회합니다. `unread=true`를 추가하면 읽지 않은 알림만 조회됩니다.",
+        manual_parameters=[
+            openapi.Parameter(
+                name="user_id",
+                in_=openapi.IN_QUERY,
+                description="유저의 이메일 또는 ID",
+                type=openapi.TYPE_STRING,
+                required=True
+            ),
+            openapi.Parameter(
+                name="unread",
+                in_=openapi.IN_QUERY,
+                description="읽지 않은 알림 필터 (true: 읽지 않은 알림만 조회)",
+                type=openapi.TYPE_BOOLEAN,
+                required=False
+            ),
+        ],
+        responses={
+            200: NotificationSerializer(many=True),
+            404: openapi.Response("유저를 찾을 수 없음"),
+        }
+    )
     def get(self, request, *args, **kwargs):
         # user = request.user  # 현재 로그인한 유저
 
