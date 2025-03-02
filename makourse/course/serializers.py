@@ -6,7 +6,7 @@ from account.models import *
 class CreateMyPlaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = MyPlace
-        fields = ['id', 'place_name', 'address', 'latitude', 'longitude'] 
+        fields = ['id', 'place_name', 'address', 'latitude', 'longitude', 'content'] 
 
 
         
