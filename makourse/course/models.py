@@ -7,6 +7,7 @@ class MyPlace(models.Model): # 나만의 장소
     latitude = models.FloatField(default=0.0)  # 위도
     longitude = models.FloatField(default=0.0)  # 경도
     # 일단 위도, 경도를 사용할거 같아서 주소 string 필드는 안적음
+    content = models.TextField(null=True, blank = True)  # 메모
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False) # 유저가 삭제되면 나만의 장소도 삭제
 
