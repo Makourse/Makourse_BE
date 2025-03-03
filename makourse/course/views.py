@@ -145,11 +145,20 @@ class ScheduleEntryDetailView(APIView):
         operation_summary="303 스케줄 속 각 일정 삭제하기",
         responses={204: "ScheduleEntry deleted successfully."}
     )
+
     def delete(self, request, pk, *args, **kwargs):
         schedule_entry = get_object_or_404(ScheduleEntry, pk=pk)
-        # ScheduleEntry 객체 가져오기
-
+        schedule = schedule_entry.schedule  # 해당 일정이 속한 스케줄 가져오기
+        
+        # 해당 일정 삭제
         schedule_entry.delete()
+
+        # 남아 있는 일정들의 num 재정렬
+        remaining_entries = ScheduleEntry.objects.filter(schedule=schedule).order_by("num")
+        for index, entry in enumerate(remaining_entries, start=0):
+            entry.num = index  # 1부터 다시 매기기
+            entry.save()
+
         return Response({"message": "ScheduleEntry deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 
